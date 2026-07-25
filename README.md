@@ -21,33 +21,15 @@ Open `http://localhost:3000`. The server serves the website and API together. It
 4. Set `CORS_ORIGIN` only if a separately hosted frontend must call this API. For the included app, serve it from the same URL and leave it empty.
 5. Back up the SQLite database regularly. For multiple application instances or high traffic, migrate the database to managed PostgreSQL before scaling horizontally.
 
-## Android app
+## YouTube features
 
-The Android Expo app is in [`android/`](./android). It has been validated with `expo-doctor` and exported successfully for Android.
-
-```powershell
-cd android
-Copy-Item .env.example .env
-# Set EXPO_PUBLIC_API_URL in .env to your deployed HTTPS backend URL.
-npm run android
-```
-
-For a Play Store AAB or shareable APK, an Expo account is required for the EAS cloud build. The build profiles are already defined in `android/eas.json`.
-
-## OTP email setup
-
-All account verification and login uses a six-digit OTP sent to the Gmail address entered by the user. For Railway, use Resend's HTTPS email API rather than Gmail SMTP. Add these values to Railway Variables or `.env`; never commit real values to git.
-
-- `RESEND_API_KEY` — create one at Resend after verifying your sender domain.
-- `RESEND_FROM` — verified sender, for example `Nova <otp@yourdomain.com>`.
-
-Gmail remains available as a fallback with `GMAIL_USER` and `GMAIL_APP_PASSWORD`, but SMTP can time out on hosting providers.
+Copy `.env.example` to `.env` and set `YOUTUBE_API_KEY` from [Google Cloud Console](https://console.cloud.google.com/) (YouTube Data API v3 enabled). Without it, the rest of the app still works; only YouTube search and Shorts stay disabled.
 
 ## Included security controls
 
-- Gmail OTPs expire after five minutes and can only be attempted five times.
+- Passwords are hashed with scrypt and a per-user random salt; never stored in plain text.
 - Browser sessions use random, server-stored tokens and expire after 30 days.
 - Private API routes require authentication.
-- Login, signup, OTP, and posting endpoints have basic rate limits.
+- Login, signup, and posting endpoints have basic rate limits.
 - The SQLite database and `.env` are not served as static files.
 - Image uploads are validated and size-limited.

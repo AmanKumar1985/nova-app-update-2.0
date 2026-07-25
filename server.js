@@ -49,6 +49,7 @@ db.exec(`
   CREATE TABLE IF NOT EXISTS highlight_items (id TEXT PRIMARY KEY, highlight_id TEXT NOT NULL REFERENCES highlights(id) ON DELETE CASCADE, image TEXT NOT NULL, position INTEGER NOT NULL DEFAULT 0);
   CREATE TABLE IF NOT EXISTS story_views (story_id TEXT NOT NULL REFERENCES stories(id) ON DELETE CASCADE, viewer_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE, viewed_at INTEGER NOT NULL, PRIMARY KEY(story_id, viewer_id));
   CREATE TABLE IF NOT EXISTS comment_likes (comment_id TEXT NOT NULL REFERENCES comments(id) ON DELETE CASCADE, user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE, PRIMARY KEY(comment_id, user_id));
+  CREATE TABLE IF NOT EXISTS notes (user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE, text TEXT, song_id TEXT, song_title TEXT, song_artist TEXT, song_cover TEXT, song_url TEXT, created_at INTEGER NOT NULL);
 `);
 function addColumnIfMissing(table, column, definition) {
   const found = db.prepare(`PRAGMA table_info(${table})`).all().some(row => row.name === column);
@@ -63,6 +64,7 @@ addColumnIfMissing('messages', 'forwarded', 'INTEGER NOT NULL DEFAULT 0');
 addColumnIfMissing('messages', 'read_at', 'INTEGER');
 addColumnIfMissing('messages', 'image', 'TEXT');
 addColumnIfMissing('messages', 'audio', 'TEXT');
+addColumnIfMissing('messages', 'file', 'TEXT');
 addColumnIfMissing('users', 'is_instagram', 'INTEGER NOT NULL DEFAULT 0');
 addColumnIfMissing('posts', 'is_reel', 'INTEGER NOT NULL DEFAULT 0');
 addColumnIfMissing('posts', 'is_instagram', 'INTEGER NOT NULL DEFAULT 0');
@@ -76,7 +78,7 @@ const digest = value => crypto.createHash('sha256').update(value).digest('hex');
 const clean = value => String(value || '').trim();
 const validUsername = value => /^[a-z0-9_.]{3,20}$/.test(value);
 const validEmail = value => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-const validPassword = value => /^\d{5}$/.test(value);
+const validPassword = value => value.length >= 5 && value.length <= 72;
 function hashPassword(password) {
   const salt = crypto.randomBytes(16).toString('hex');
   const hash = crypto.scryptSync(password, salt, 64).toString('hex');
@@ -155,21 +157,22 @@ app.post('/api/auth/signup', rateLimit(10, 60000), (req, res) => {
   const username = clean(req.body.username).toLowerCase(); const displayName = clean(req.body.displayName) || username;
   const email = clean(req.body.email).toLowerCase(); const password = clean(req.body.password);
   if (!validUsername(username)) return res.status(400).json({ error: 'Username must be 3–20 lowercase letters, numbers, dots, or underscores.' });
-  if (!validEmail(email)) return res.status(400).json({ error: 'Enter a valid Gmail address.' });
-  if (!validPassword(password)) return res.status(400).json({ error: 'Password must be exactly 5 digits.' });
+  if (!validEmail(email)) return res.status(400).json({ error: 'Enter a valid email address.' });
+  if (!validPassword(password)) return res.status(400).json({ error: 'Password must be 5-72 characters (letters, numbers, symbols all allowed).' });
   if (db.prepare('SELECT 1 FROM users WHERE username=?').get(username)) return res.status(409).json({ error: 'This username is already taken.' });
-  if (db.prepare('SELECT 1 FROM users WHERE email=?').get(email)) return res.status(409).json({ error: 'This Gmail address already has an account.' });
+  if (db.prepare('SELECT 1 FROM users WHERE email=?').get(email)) return res.status(409).json({ error: 'This email address already has an account.' });
   const { hash, salt } = hashPassword(password);
   const user = { id: id(), username, display_name: displayName.slice(0, 50), created_at: now(), email };
   db.prepare('INSERT INTO users (id,username,display_name,password_hash,password_salt,email,created_at) VALUES (?,?,?,?,?,?,?)').run(user.id,user.username,user.display_name,hash,salt,user.email,user.created_at);
   loginResponse(res, user);
 });
 app.post('/api/auth/login', rateLimit(15, 60000), (req, res) => {
-  const email = clean(req.body.email).toLowerCase(); const password = clean(req.body.password);
-  if (!validEmail(email)) return res.status(400).json({ error: 'Enter a valid Gmail address.' });
+  const loginInput = clean(req.body.email || req.body.username || req.body.login).toLowerCase();
+  const password = clean(req.body.password);
+  if (!loginInput) return res.status(400).json({ error: 'Enter your email or username.' });
   if (!password) return res.status(400).json({ error: 'Enter your password.' });
-  const user = db.prepare('SELECT * FROM users WHERE email=?').get(email);
-  if (!user || !verifyPassword(password, user.password_hash, user.password_salt)) return res.status(401).json({ error: 'Incorrect email or password.' });
+  const user = db.prepare('SELECT * FROM users WHERE lower(email)=? OR lower(username)=?').get(loginInput, loginInput);
+  if (!user || !verifyPassword(password, user.password_hash, user.password_salt)) return res.status(401).json({ error: 'Incorrect email/username or password.' });
   loginResponse(res, user);
 });
 app.post('/api/auth/logout', auth, (req, res) => { db.prepare('DELETE FROM sessions WHERE token_hash=?').run(digest((req.get('authorization') || '').replace(/^Bearer\s+/i,''))); res.json({ ok: true }); });
@@ -191,13 +194,27 @@ app.get('/api/users/:username/following', auth, (req,res) => {
   const rows = db.prepare('SELECT u.* FROM follows f JOIN users u ON u.id=f.following_id WHERE f.follower_id=?').all(user.id);
   res.json({ users: rows.map(u => publicUser(u, req.user.id)) });
 });
+app.post('/api/users/:username/follow', auth, (req,res) => {
+  const target = db.prepare('SELECT * FROM users WHERE lower(username)=?').get(req.params.username.toLowerCase());
+  if(!target) return res.status(404).json({error:'User not found.'});
+  if(target.id === req.user.id) return res.status(400).json({error:'You cannot follow yourself.'});
+  const exists = db.prepare('SELECT 1 FROM follows WHERE follower_id=? AND following_id=?').get(req.user.id, target.id);
+  if(exists){
+    db.prepare('DELETE FROM follows WHERE follower_id=? AND following_id=?').run(req.user.id, target.id);
+  } else {
+    db.prepare('INSERT INTO follows (follower_id, following_id) VALUES (?,?)').run(req.user.id, target.id);
+    notify(target.id, req.user.id, 'follow');
+  }
+  res.json({ user: publicUser(db.prepare('SELECT * FROM users WHERE id=?').get(target.id), req.user.id) });
+});
 
 function postDto(post, viewerId) { const author=db.prepare('SELECT * FROM users WHERE id=?').get(post.author_id); return {id:post.id,image:post.image,isReel:!!post.is_reel,isInstagram:!!post.is_instagram,platform:post.platform||(post.is_instagram?'instagram':'nova'),externalUrl:post.external_url||'',filter:post.filter||'normal',caption:post.caption,createdAt:post.created_at,author:publicUser(author,viewerId),likes:db.prepare('SELECT COUNT(*) count FROM likes WHERE post_id=?').get(post.id).count,liked:!!db.prepare('SELECT 1 FROM likes WHERE post_id=? AND user_id=?').get(post.id,viewerId),saved:!!db.prepare('SELECT 1 FROM saved_posts WHERE post_id=? AND user_id=?').get(post.id,viewerId),comments:db.prepare('SELECT c.id,c.text,c.created_at,u.username,u.display_name FROM comments c JOIN users u ON u.id=c.user_id WHERE c.post_id=? ORDER BY c.created_at DESC LIMIT 3').all(post.id).reverse().map(c=>({id:c.id,text:c.text,createdAt:c.created_at,user:{username:c.username,displayName:c.display_name}}))}; }
 app.get('/api/posts', auth, (req,res) => { const posts=db.prepare('SELECT * FROM posts ORDER BY created_at DESC LIMIT 100').all(); res.json({posts:posts.map(p=>postDto(p,req.user.id))}); });
 app.get('/api/reels', auth, (req,res) => { const posts=db.prepare('SELECT * FROM posts WHERE is_reel=1 ORDER BY created_at DESC LIMIT 100').all(); res.json({posts:posts.map(p=>postDto(p,req.user.id))}); });
-app.post('/api/posts', auth, rateLimit(20, 60000), (req,res) => { const image=String(req.body.image||''); const caption=clean(req.body.caption); const isReel=req.body.isReel?1:0; const filter=clean(req.body.filter||'normal'); const valid = isReel ? validVideo(image) : validImage(image); if(!valid) return res.status(400).json({error: isReel ? 'Please choose an MP4 or WEBM video smaller than 12 MB.' : 'Please choose a JPG, PNG, WEBP, or GIF image smaller than 3.5 MB.'}); const post={id:id(),author_id:req.user.id,image,caption:caption.slice(0,1000),created_at:now(),is_reel:isReel,filter}; db.prepare('INSERT INTO posts (id,author_id,image,caption,created_at,is_reel,filter) VALUES (?,?,?,?,?,?,?)').run(post.id,post.author_id,post.image,post.caption,post.created_at,post.is_reel,post.filter); res.status(201).json({post:postDto(post,req.user.id)}); });
+app.post('/api/posts', auth, rateLimit(20, 60000), (req,res) => { const image=String(req.body.image||''); const caption=clean(req.body.caption); const isReel=req.body.isReel?1:0; const filter=clean(req.body.filter||'normal'); const valid = isReel ? validVideo(image) : validImage(image); if(!valid) return res.status(400).json({error: isReel ? 'Please choose an MP4 or WEBM video smaller than 15 MB.' : 'Please choose a JPG, PNG, WEBP, or GIF image smaller than 5 MB.'}); const post={id:id(),author_id:req.user.id,image,caption:caption.slice(0,1000),created_at:now(),is_reel:isReel,filter}; db.prepare('INSERT INTO posts (id,author_id,image,caption,created_at,is_reel,filter) VALUES (?,?,?,?,?,?,?)').run(post.id,post.author_id,post.image,post.caption,post.created_at,post.is_reel,post.filter); res.status(201).json({post:postDto(post,req.user.id)}); });
 app.post('/api/posts/:id/like', auth, (req,res) => { const post=db.prepare('SELECT * FROM posts WHERE id=?').get(req.params.id); if(!post)return res.status(404).json({error:'Post not found.'}); if(post.is_instagram) return res.status(400).json({error:'Instagram posts cannot be liked.'}); const exists=db.prepare('SELECT 1 FROM likes WHERE post_id=? AND user_id=?').get(post.id,req.user.id); if(exists)db.prepare('DELETE FROM likes WHERE post_id=? AND user_id=?').run(post.id,req.user.id);else { db.prepare('INSERT INTO likes (post_id,user_id) VALUES (?,?)').run(post.id,req.user.id); notify(post.author_id,req.user.id,'like',post.id); }res.json({post:postDto(post,req.user.id)}); });
 app.post('/api/posts/:id/save', auth, (req,res) => { const post=db.prepare('SELECT * FROM posts WHERE id=?').get(req.params.id); if(!post)return res.status(404).json({error:'Post not found.'}); const saved=db.prepare('SELECT 1 FROM saved_posts WHERE user_id=? AND post_id=?').get(req.user.id,post.id); if(saved)db.prepare('DELETE FROM saved_posts WHERE user_id=? AND post_id=?').run(req.user.id,post.id);else db.prepare('INSERT INTO saved_posts (user_id,post_id,created_at) VALUES (?,?,?)').run(req.user.id,post.id,now());res.json({post:postDto(post,req.user.id)}); });
+app.delete('/api/posts/:id', auth, (req,res) => { const post=db.prepare('SELECT * FROM posts WHERE id=?').get(req.params.id); if(!post || post.author_id!==req.user.id) return res.status(404).json({error:'Post not found or unauthorized.'}); db.prepare('DELETE FROM posts WHERE id=?').run(post.id); res.json({ok:true}); });
 app.get('/api/saved', auth, (req,res) => { const posts=db.prepare('SELECT p.* FROM saved_posts s JOIN posts p ON p.id=s.post_id WHERE s.user_id=? ORDER BY s.created_at DESC').all(req.user.id); res.json({posts:posts.map(post=>postDto(post,req.user.id))}); });
 app.get('/api/music/search', auth, async (req, res) => {
   const q = clean(req.query.q || 'trending');
@@ -259,13 +276,22 @@ app.get('/api/youtube/search', auth, async (req, res) => {
   }
 
   try {
-    const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=15&q=${encodeURIComponent(query)}&pageToken=${encodeURIComponent(pageToken)}&key=${apiKey}`;
+    const qStr = (query === 'trending') ? 'India trending videos' : `${query} India`;
+    const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&regionCode=IN&relevanceLanguage=hi&maxResults=15&q=${encodeURIComponent(qStr)}&pageToken=${encodeURIComponent(pageToken)}&key=${apiKey}`;
     const searchRes = await fetch(searchUrl);
 
     if (!searchRes.ok) {
       const errData = await searchRes.json().catch(() => ({}));
-      const msg = (errData.error && errData.error.message) ? errData.error.message : 'YouTube API request failed';
-      return res.status(searchRes.status).json({ error: msg, videos: [] });
+      const msg = (errData.error && errData.error.message) ? errData.error.message : 'YouTube API key invalid or restricted.';
+      console.warn('YouTube Search API warning:', msg);
+      // Fallback sample videos so UI is never broken
+      const fallbackVideos = [
+        { id: '3JZ_D3ELwOQ', title: '🔥 Trending Tech & AI World', description: 'Explore the latest innovations and gadgets.', thumbnail: 'https://img.youtube.com/vi/3JZ_D3ELwOQ/hqdefault.jpg', channelTitle: 'Nova Tech', duration: '10:15', viewCount: '1,250,000' },
+        { id: 'L_LUpnjgPso', title: '🎵 Best Chill & Lofi Beats', description: 'Relaxing music stream for focus.', thumbnail: 'https://img.youtube.com/vi/L_LUpnjgPso/hqdefault.jpg', channelTitle: 'Lofi Beats', duration: '24:00', viewCount: '5,800,000' },
+        { id: 'dQw4w9WgXcQ', title: '🏎️ Supercars & High Speed Drives', description: 'Top speed drives on scenic highway roads.', thumbnail: 'https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg', channelTitle: 'Speed Drives', duration: '08:45', viewCount: '890,000' },
+        { id: 'kJQP7kiw5Fk', title: '🎬 Epic Movie Previews & Trailers', description: 'Official blockbuster movie previews.', thumbnail: 'https://img.youtube.com/vi/kJQP7kiw5Fk/hqdefault.jpg', channelTitle: 'Cinema Central', duration: '03:20', viewCount: '3,400,000' }
+      ];
+      return res.json({ videos: fallbackVideos, nextPageToken: '', prevPageToken: '', warning: msg });
     }
 
     const searchData = await searchRes.json();
@@ -317,7 +343,7 @@ app.get('/api/youtube/search', auth, async (req, res) => {
   }
 });
 
-// Backend Route: YouTube Data API v3 Vertical Shorts Feed
+// Backend Route: YouTube Data API v3 Vertical Shorts Feed (India Region Filtered)
 app.get('/api/youtube/shorts', auth, async (req, res) => {
   const pageToken = clean(req.query.pageToken || '');
   const apiKey = process.env.YOUTUBE_API_KEY || '';
@@ -331,13 +357,20 @@ app.get('/api/youtube/shorts', auth, async (req, res) => {
   }
 
   try {
-    const query = clean(req.query.q || 'shorts viral trending');
-    const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoDuration=short&maxResults=10&q=${encodeURIComponent(query)}&pageToken=${encodeURIComponent(pageToken)}&key=${apiKey}`;
+    const rawQ = clean(req.query.q || 'Indian shorts viral trending');
+    const qStr = rawQ.includes('Indian') ? rawQ : `Indian shorts ${rawQ}`;
+    const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoDuration=short&regionCode=IN&relevanceLanguage=hi&maxResults=15&q=${encodeURIComponent(qStr)}&pageToken=${encodeURIComponent(pageToken)}&key=${apiKey}`;
     const searchRes = await fetch(searchUrl);
 
     if (!searchRes.ok) {
       const errData = await searchRes.json().catch(() => ({}));
-      return res.status(searchRes.status).json({ error: errData.error ? errData.error.message : 'YouTube Shorts API failed', shorts: [] });
+      console.warn('YouTube Shorts API warning:', errData.error ? errData.error.message : 'API key invalid');
+      const fallbackShorts = [
+        { id: '3Z78y1k3W5Y', title: '✨ High Speed Drive 🏎️ #shorts #viral', description: 'Top speed drive on highway.', thumbnail: 'https://img.youtube.com/vi/3Z78y1k3W5Y/hqdefault.jpg', channelTitle: '🔥 Instagram Viral', viewCount: '1.8M', likeCount: '145K' },
+        { id: '5qap5aO4i9A', title: '🌊 Escape to Nature 🍃 #shorts #trending', description: 'Relaxing ocean waves and breeze.', thumbnail: 'https://img.youtube.com/vi/5qap5aO4i9A/hqdefault.jpg', channelTitle: '🔴 YouTube Shorts', viewCount: '920K', likeCount: '82K' },
+        { id: 'LXb3EKWsInQ', title: '⚡ Cyberpunk Vibe 🌆 #shorts #cyber', description: 'Futuristic city lights.', thumbnail: 'https://img.youtube.com/vi/LXb3EKWsInQ/hqdefault.jpg', channelTitle: '⚡ Neon Cyber', viewCount: '3.4M', likeCount: '310K' }
+      ];
+      return res.json({ shorts: fallbackShorts, nextPageToken: '' });
     }
 
     const searchData = await searchRes.json();
@@ -394,6 +427,7 @@ app.get('/api/stories', auth, (req,res) => { const mine = req.query.mine==='1'; 
 app.post('/api/stories', auth, rateLimit(10,60000), (req,res) => { const image=String(req.body.image||''); if(!validImage(image))return res.status(400).json({error:'Please choose a valid image.'}); const story={id:id(),author_id:req.user.id,image,created_at:now()}; db.prepare('INSERT INTO stories (id,author_id,image,created_at) VALUES (?,?,?,?)').run(story.id,story.author_id,story.image,story.created_at); res.status(201).json({story}); });
 app.post('/api/stories/:id/view', auth, (req,res) => { const s=db.prepare('SELECT * FROM stories WHERE id=?').get(req.params.id); if(!s) return res.status(404).json({error:'Story not found.'}); db.prepare('INSERT OR IGNORE INTO story_views (story_id,viewer_id,viewed_at) VALUES (?,?,?)').run(s.id, req.user.id, now()); res.json({ok:true}); });
 app.get('/api/stories/:id/views', auth, (req,res) => { const s=db.prepare('SELECT * FROM stories WHERE id=?').get(req.params.id); if(!s) return res.status(404).json({error:'Story not found.'}); if(s.author_id!==req.user.id) return res.status(403).json({error:'Forbidden.'}); const rows=db.prepare('SELECT v.viewed_at,u.username,u.display_name,u.avatar FROM story_views v JOIN users u ON u.id=v.viewer_id WHERE v.story_id=? ORDER BY v.viewed_at DESC').all(s.id); res.json({views:rows.map(r=>({username:r.username,displayName:r.display_name,avatar:r.avatar,viewedAt:r.viewed_at}))}); });
+app.delete('/api/stories/:id', auth, (req,res) => { const s=db.prepare('SELECT * FROM stories WHERE id=?').get(req.params.id); if(!s || s.author_id!==req.user.id) return res.status(404).json({error:'Story not found or unauthorized.'}); db.prepare('DELETE FROM stories WHERE id=?').run(s.id); res.json({ok:true}); });
 
 app.get('/api/highlights/:id', auth, (req,res) => { const h=db.prepare('SELECT * FROM highlights WHERE id=?').get(req.params.id); if(!h)return res.status(404).json({error:'Highlight not found.'}); const items=db.prepare('SELECT id,image FROM highlight_items WHERE highlight_id=? ORDER BY position ASC').all(h.id); res.json({highlight:{id:h.id,title:h.title,cover:h.cover,createdAt:h.created_at},items}); });
 app.post('/api/highlights', auth, rateLimit(10,60000), (req,res) => {
@@ -431,10 +465,65 @@ app.post('/api/comments/:id/like', auth, (req,res) => {
   res.json({ liked, likesCount });
 });
 app.post('/api/posts/:id/comments', auth, (req,res) => { const text=clean(req.body.text); const post=db.prepare('SELECT * FROM posts WHERE id=?').get(req.params.id); if(!post)return res.status(404).json({error:'Post not found.'});if(!text||text.length>500)return res.status(400).json({error:'Comment must be 1–500 characters.'});db.prepare('INSERT INTO comments (id,post_id,user_id,text,created_at) VALUES (?,?,?,?,?)').run(id(),post.id,req.user.id,text,now());res.json({post:postDto(post,req.user.id)}); });
+app.delete('/api/comments/:id', auth, (req,res) => { const c=db.prepare('SELECT * FROM comments WHERE id=?').get(req.params.id); if(!c || c.user_id!==req.user.id) return res.status(404).json({error:'Comment not found or unauthorized.'}); db.prepare('DELETE FROM comments WHERE id=?').run(c.id); res.json({ok:true}); });
+
+app.get('/api/notes', auth, (req, res) => {
+  const cutoff = now() - 24 * 3600000;
+  const rows = db.prepare(`
+    SELECT n.*, u.username, u.display_name, u.avatar 
+    FROM notes n 
+    JOIN users u ON u.id = n.user_id 
+    WHERE n.created_at > ?
+    ORDER BY n.created_at DESC
+  `).all(cutoff);
+
+  res.json({
+    notes: rows.map(r => ({
+      userId: r.user_id,
+      text: r.text,
+      song: r.song_title ? {
+        id: r.song_id,
+        title: r.song_title,
+        artist: r.song_artist,
+        cover: r.song_cover,
+        url: r.song_url
+      } : null,
+      createdAt: r.created_at,
+      user: {
+        username: r.username,
+        displayName: r.display_name,
+        avatar: r.avatar
+      }
+    }))
+  });
+});
+
+app.post('/api/notes', auth, (req, res) => {
+  const text = clean(req.body.text).slice(0, 60);
+  const song = req.body.song || null;
+  const songId = song ? clean(song.id) : null;
+  const songTitle = song ? clean(song.title).slice(0, 50) : null;
+  const songArtist = song ? clean(song.artist).slice(0, 50) : null;
+  const songCover = song ? String(song.cover || '') : null;
+  const songUrl = song ? String(song.url || song.mp3 || '') : null;
+
+  db.prepare(`
+    INSERT OR REPLACE INTO notes (user_id, text, song_id, song_title, song_artist, song_cover, song_url, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(req.user.id, text, songId, songTitle, songArtist, songCover, songUrl, now());
+
+  res.json({ ok: true });
+});
+
+app.delete('/api/notes', auth, (req, res) => {
+  db.prepare('DELETE FROM notes WHERE user_id=?').run(req.user.id);
+  res.json({ ok: true });
+});
 
 app.get('/api/messages/:username', auth, (req,res) => {
   const targetStr = clean(req.params.username).toLowerCase();
-  const partner=db.prepare('SELECT * FROM users WHERE lower(username)=? OR lower(display_name)=? OR id=?').get(targetStr, targetStr, targetStr);
+  const rawTarget = clean(req.params.username);
+  const partner = db.prepare('SELECT * FROM users WHERE lower(username)=? OR lower(display_name)=? OR username=? OR display_name=? OR id=?').get(targetStr, targetStr, rawTarget, rawTarget, rawTarget);
   if(!partner) return res.status(404).json({error:'User not found.'});
   const unreadIds = db.prepare('SELECT id FROM messages WHERE recipient_id=? AND sender_id=? AND read_at IS NULL').all(req.user.id, partner.id);
   if (unreadIds.length) {
@@ -464,7 +553,8 @@ app.get('/api/messages', auth, (req,res) => {
 });
 app.post('/api/messages/:username', auth, rateLimit(120, 60000), (req,res) => {
   const targetStr = clean(req.params.username).toLowerCase();
-  const partner=db.prepare('SELECT * FROM users WHERE lower(username)=? OR lower(display_name)=? OR id=?').get(targetStr, targetStr, targetStr);
+  const rawTarget = clean(req.params.username);
+  const partner = db.prepare('SELECT * FROM users WHERE lower(username)=? OR lower(display_name)=? OR username=? OR display_name=? OR id=?').get(targetStr, targetStr, rawTarget, rawTarget, rawTarget);
   const text=clean(req.body.text);
   const img=req.body.image ? String(req.body.image) : null;
   const audio=req.body.audio ? String(req.body.audio) : null;
@@ -475,6 +565,8 @@ app.post('/api/messages/:username', auth, rateLimit(120, 60000), (req,res) => {
   if(!text && !img && !audio && !fileData) return res.status(400).json({error:'Message cannot be empty.'});
   if(text && text.length>1000) return res.status(400).json({error:'Message too long.'});
   if (img && !validImage(img)) return res.status(400).json({error:'Invalid image attachment.'});
+  if (audio && Buffer.byteLength(audio, 'utf8') > 10 * 1024 * 1024) return res.status(400).json({error:'Audio file must be smaller than 10 MB.'});
+  if (fileData && Buffer.byteLength(fileData, 'utf8') > 10 * 1024 * 1024) return res.status(400).json({error:'File attachment must be smaller than 10 MB.'});
   if (replyTo && !db.prepare('SELECT 1 FROM messages WHERE id=? AND ((sender_id=? AND recipient_id=?) OR (sender_id=? AND recipient_id=?))').get(replyTo, req.user.id, partner.id, partner.id, req.user.id)) return res.status(400).json({error:'Invalid reply.'});
   const msgId = id();
   db.prepare('INSERT INTO messages (id,sender_id,recipient_id,text,created_at,reply_to,forwarded,image,audio,file) VALUES (?,?,?,?,?,?,?,?,?,?)').run(msgId,req.user.id,partner.id,text||'',now(),replyTo,forwarded,img,audio,fileData);
@@ -550,7 +642,8 @@ wss.on('connection', (socket, req) => {
 });
 function seedReelsIfEmpty() {
   try {
-    db.prepare("DELETE FROM posts WHERE is_reel=1").run();
+    const existingReels = db.prepare("SELECT COUNT(*) count FROM posts WHERE is_reel=1").get().count;
+    if (existingReels > 0) return;
     
     const creatorNames = [
       { username: 'viral_reels', displayName: '🔥 Instagram Viral', bio: 'Official Instagram Trending Reels ⚡', isIg: 1 },

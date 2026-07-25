@@ -1,7 +1,7 @@
 {
   "name": "nova-social-app",
   "version": "1.0.0",
-  "description": "Multi-user Nova social app with secure authentication, posts, follows, comments, chats, and optional OTP delivery",
+  "description": "Multi-user Nova social app with secure authentication, posts, follows, comments, and chats",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -11,8 +11,6 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
-    "nodemailer": "^6.9.14",
-    "twilio": "^5.2.2",
     "ws": "^8.18.0"
   }
 }

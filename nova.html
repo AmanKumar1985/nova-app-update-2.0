@@ -9,7 +9,9 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Nova">
 <style>
-:root{--bg:#151020;--card:#211832;--card2:#2c2041;--text:#fff8ed;--muted:#b8a9c9;--line:#413058;--pink:#e0407a;--gold:#f5a623;--grad:linear-gradient(120deg,#f5a623,#e0407a)}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px system-ui,-apple-system,Segoe UI,sans-serif}button,input,textarea{font:inherit}button{cursor:pointer}.app{max-width:580px;min-height:100vh;margin:auto;background:var(--bg)}.top{height:60px;position:sticky;top:0;z-index:5;padding:13px 17px;background:#151020ed;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;backdrop-filter:blur(10px)}.logo{font:italic 600 25px Georgia,serif;background:var(--grad);color:transparent;background-clip:text}.icon,.nav{border:0;background:transparent;color:var(--text);font-size:22px;padding:5px;position:relative}.screen{padding-bottom:78px}.bottom{position:fixed;bottom:0;width:min(100%,580px);height:65px;display:flex;justify-content:space-around;align-items:center;background:#151020f5;border-top:1px solid var(--line);z-index:5}.nav{color:var(--muted);font-size:20px;display:flex;align-items:center;justify-content:center;position:relative}.nav.on{color:var(--text)}.auth{min-height:100vh;display:grid;place-items:center;padding:20px}.authbox{width:min(100%,410px);background:var(--card);border:1px solid var(--line);border-radius:20px;padding:25px}.hero{text-align:center;margin-bottom:25px}.hero h1{font:italic 600 43px Georgia,serif;margin:5px;background:var(--grad);color:transparent;background-clip:text}.muted{color:var(--muted)}.tabs{display:flex;gap:5px;background:var(--card2);padding:4px;border-radius:11px;margin:17px 0}.tab{border:0;background:none;color:var(--muted);flex:1;padding:9px;border-radius:8px;font-weight:700}.tab.on{background:var(--grad);color:#fff}label{color:var(--muted);font-size:12px;font-weight:700;display:block;margin:13px 0 5px;text-transform:uppercase}input,textarea{width:100%;border:1px solid var(--line);border-radius:10px;background:var(--card2);color:var(--text);padding:11px;outline:0}input:focus,textarea:focus{border-color:var(--pink)}.primary,.secondary,.pill{border:0;border-radius:10px;padding:11px 14px;font-weight:800}.primary{width:100%;color:#fff;background:var(--grad);margin-top:17px}.secondary,.pill{background:var(--card2);color:var(--text);border:1px solid var(--line)}.error{min-height:19px;color:#ff86ae;margin-top:10px}
+:root{--bg:#151020;--card:#211832;--card2:#2c2041;--text:#fff8ed;--muted:#b8a9c9;--line:#413058;--pink:#e0407a;--gold:#f5a623;--grad:linear-gradient(120deg,#f5a623,#e0407a)}*{box-sizing:border-box;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
+input,textarea,[contenteditable],[contenteditable="true"],[contenteditable] *{-webkit-user-select:text!important;-moz-user-select:text!important;-ms-user-select:text!important;user-select:text!important;-webkit-touch-callout:default!important}
+body{margin:0;background:var(--bg);color:var(--text);font:14px system-ui,-apple-system,Segoe UI,sans-serif}button,input,textarea{font:inherit}button{cursor:pointer}.app{max-width:580px;min-height:100vh;margin:auto;background:var(--bg)}.top{height:60px;position:sticky;top:0;z-index:5;padding:13px 17px;background:#151020ed;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;backdrop-filter:blur(10px)}.logo{font:italic 600 25px Georgia,serif;background:var(--grad);color:transparent;background-clip:text}.icon,.nav{border:0;background:transparent;color:var(--text);font-size:22px;padding:5px;position:relative}.screen{padding-bottom:78px}.bottom{position:fixed;bottom:0;width:min(100%,580px);height:65px;display:flex;justify-content:space-around;align-items:center;background:#151020f5;border-top:1px solid var(--line);z-index:5}.nav{color:var(--muted);font-size:20px;display:flex;align-items:center;justify-content:center;position:relative}.nav.on{color:var(--text)}.auth{min-height:100vh;display:grid;place-items:center;padding:20px}.authbox{width:min(100%,410px);background:var(--card);border:1px solid var(--line);border-radius:20px;padding:25px}.hero{text-align:center;margin-bottom:25px}.hero h1{font:italic 600 43px Georgia,serif;margin:5px;background:var(--grad);color:transparent;background-clip:text}.muted{color:var(--muted)}.tabs{display:flex;gap:5px;background:var(--card2);padding:4px;border-radius:11px;margin:17px 0}.tab{border:0;background:none;color:var(--muted);flex:1;padding:9px;border-radius:8px;font-weight:700}.tab.on{background:var(--grad);color:#fff}label{color:var(--muted);font-size:12px;font-weight:700;display:block;margin:13px 0 5px;text-transform:uppercase}input,textarea{width:100%;border:1px solid var(--line);border-radius:10px;background:var(--card2);color:var(--text);padding:11px;outline:0}input:focus,textarea:focus{border-color:var(--pink)}.primary,.secondary,.pill{border:0;border-radius:10px;padding:11px 14px;font-weight:800}.primary{width:100%;color:#fff;background:var(--grad);margin-top:17px}.secondary,.pill{background:var(--card2);color:var(--text);border:1px solid var(--line)}.error{min-height:19px;color:#ff86ae;margin-top:10px}
 .devcredit{text-align:center;font-weight:800;font-size:11px;color:var(--muted);margin-top:16px;letter-spacing:.3px}.stories{display:flex;gap:14px;overflow:auto;padding:15px;border-bottom:1px solid var(--line)}.story{background:none;border:0;color:var(--muted);min-width:58px;font-size:11px;overflow:hidden;text-overflow:ellipsis}.avatar{width:39px;height:39px;border-radius:50%;overflow:hidden;display:grid;place-items:center;background:var(--card2);color:var(--gold);font-weight:800;flex:none}.avatar.big{width:78px;height:78px;font-size:27px}.avatar img{width:100%;height:100%;object-fit:cover}.ring{width:58px;height:58px;border-radius:50%;padding:3px;background:var(--grad);margin:auto auto 5px}.ring .avatar{width:100%;height:100%;background:var(--bg)}.post{border-bottom:1px solid var(--line);padding:14px 0}.posthead{padding:0 15px 11px;display:flex;align-items:center;gap:10px}.grow{flex:1}.name{font-weight:800}.small{font-size:12px}.postimg{display:block;width:100%;max-height:580px;object-fit:cover;background:var(--card2)}.actions{display:flex;gap:9px;padding:8px 12px 0}.actions button{border:0;background:none;color:var(--text);font-size:22px}.actions .liked{color:var(--pink)}.content{padding:4px 15px;line-height:1.5}.comment{padding:2px 15px;color:var(--muted)}.comment b{color:var(--text)}.commentform{display:flex;gap:8px;padding:9px 15px 0}.commentform input{background:none;border:0;border-bottom:1px solid var(--line);border-radius:0;padding:7px}.commentform button{border:0;background:none;color:var(--gold);font-weight:800}.empty{text-align:center;color:var(--muted);padding:55px 25px}.search{margin:14px 15px}.user{display:flex;align-items:center;gap:11px;padding:10px 15px}.user .pill{margin-left:auto;padding:7px 12px}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px}.grid img{width:100%;aspect-ratio:1;object-fit:cover}.add{padding:16px}.upload{border:2px dashed var(--line);border-radius:15px;min-height:170px;display:grid;place-items:center;color:var(--muted);text-align:center;position:relative}.upload input{position:absolute;inset:0;opacity:0;cursor:pointer}.preview{width:100%;max-height:420px;object-fit:cover;border-radius:13px;margin-top:13px}.profile{padding:20px 15px}.profiletop{display:flex;gap:19px;align-items:center}.stats{display:flex;gap:18px}.stats div{text-align:center}.stats b{display:block;font-size:17px}.profileactions{display:flex;gap:8px;margin:17px 0}.profileactions button{flex:1}.threadwrap{display:flex;flex-direction:column;height:100vh}.threadhead{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid var(--line);position:sticky;top:0;background:#151020ed;backdrop-filter:blur(10px);z-index:5}.messages{padding:15px;flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px}.bubble{max-width:77%;padding:9px 12px;border-radius:15px;background:var(--card2);align-self:flex-start}.bubble.me{background:var(--grad);align-self:flex-end}.send{position:sticky;bottom:0;display:flex;gap:8px;padding:10px;background:var(--bg);border-top:1px solid var(--line)}.send button{width:43px;border:0;border-radius:50%;background:var(--grad);color:#fff}.toast{position:fixed;z-index:20;bottom:82px;left:50%;transform:translateX(-50%);background:var(--card2);border:1px solid var(--line);padding:10px 16px;border-radius:20px}.link{color:var(--gold);background:none;border:0;padding:0}.hidden{display:none}
 .replyquote{border-left:3px solid var(--gold);padding:3px 8px;margin-bottom:5px;font-size:12px;opacity:.85;border-radius:4px;background:rgba(0,0,0,.15)}
 .pinlabel{font-size:11px;opacity:.75;margin-bottom:3px}
@@ -144,6 +146,10 @@
 .song-btn.active{background:#fff;color:var(--pink)}
 </style></head><body><div id="splash"><div class="splash-logo"><span>N</span><span>o</span><span>v</span><span>a</span></div></div><main class="app" id="app"></main><script>
 const app=document.querySelector('#app');let token=localStorage.getItem('nova_token')||'';let me=null,screen='home',authTab='login',posts=[],query='',profile=null,partner=null,uploadImage=null,signupDraft={},profileTab='posts',profileSaved=[],profileSavedLoaded=false,conversations=[],msgPollId=null,sending=false;
+function isEditableTarget(el){return !!(el && el.closest && el.closest('input,textarea,[contenteditable],[contenteditable="true"]'))}
+document.addEventListener('selectstart', e => { if(!isEditableTarget(e.target)) e.preventDefault(); });
+document.addEventListener('contextmenu', e => { if(!isEditableTarget(e.target)) e.preventDefault(); });
+document.addEventListener('dragstart', e => { if(!isEditableTarget(e.target) && e.target.tagName!=='IMG' && !e.target.closest('.upload')) e.preventDefault(); });
 let ws=null,wsReady=false,replyTarget=null,actionSheetMsg=null,forwardMsg=null,threadMessages=[],typingHideId=null;
 let callState=null,pc=null,localStream=null,callPartnerUser=null,incomingCall=null,callStartTs=0,callTimerId=null;
 let createSheetOpen=false,addMode='post',uploadIsVideo=false,homeStories=[],storyViewer=null,storyTimerId=null,highlightPicker=null,highlightPickerSelected=[];
@@ -153,7 +159,7 @@ const esc=s=>{const d=document.createElement('div');d.textContent=s??'';return d
 function avatar(u,cls=''){return `<div class="avatar ${cls}">${u.avatar?`<img src="${u.avatar}" alt="">`:initials(u)}</div>`}function toast(s){let e=document.createElement('div');e.className='toast';e.textContent=s;document.body.append(e);setTimeout(()=>e.remove(),2300)}
 async function api(url,options={}){let r=await fetch(url,{...options,headers:{'Content-Type':'application/json',...(token?{Authorization:'Bearer '+token}:{}),...(options.headers||{})}});let data=await r.json().catch(()=>({error:'Server response unavailable'}));if(r.status===401&&token){token='';localStorage.removeItem('nova_token');me=null;screen='login';render()}if(!r.ok)throw Error(data.error||'Something went wrong');return data}
 
-async function boot(){const minSplash=new Promise(r=>setTimeout(r,1500));const dataLoad=(async()=>{if(token)try{me=(await api('/api/me')).user;await loadPosts();await loadUnreadCounts();connectWS()}catch{}})();await Promise.all([minSplash,dataLoad]);render();const splash=document.querySelector('#splash');if(splash){splash.classList.add('fade');setTimeout(()=>splash.remove(),600)}}
+async function boot(){const minSplash=new Promise(r=>setTimeout(r,1500));const dataLoad=(async()=>{if(token)try{me=(await api('/api/me')).user;await loadPosts();await loadNotes();await loadUnreadCounts();connectWS()}catch{}})();await Promise.all([minSplash,dataLoad]);render();const splash=document.querySelector('#splash');if(splash){splash.classList.add('fade');setTimeout(()=>splash.remove(),600)}}
 async function loadPosts(){posts=(await api('/api/posts')).posts}
 async function loadUnreadCounts(){if(!token)return;try{unreadCounts=await api('/api/unread-counts')}catch(e){}}
 
@@ -170,7 +176,7 @@ function nav(){
   const msgBadge = unreadCounts.messages > 0 ? `<span class="badge-count">${unreadCounts.messages}</span>` : '';
   return `<nav class="bottom">${[['home','home'],['explore','explore'],['reels','reels'],['add','add'],['messages','messages'],['profile','profile']].map(([k,i])=>`<button class="nav ${screen===k?'on':''}" data-go="${k}">${NAV_ICONS[i]}${k==='messages'?msgBadge:''}</button>`).join('')}</nav>`;
 }
-function feed(){return `${renderTop()}<div class="stories" id="stories-row"><button class="story" data-story-mine="1"><div class="ring">${avatar(me)}</div>Your story +</button></div>${posts.length?posts.map(post).join(''):'<div class="empty">Your feed is empty.<br><br>Follow people from Explore or share your first post.</div>'}${nav()}`}
+function feed(){return `${renderTop()}<div id="instagram-notes-row" style="margin-bottom:8px">${renderNotesRowContent()}</div><div class="stories" id="stories-row"><button class="story" data-story-mine="1"><div class="ring">${avatar(me)}</div>Your story +</button></div>${posts.length?posts.map(post).join(''):'<div class="empty">Your feed is empty.<br><br>Follow people from Explore or share your first post.</div>'}${nav()}`}
 
 async function loadHomeStories(){let row=document.querySelector('#stories-row');if(!row)return;try{homeStories=(await api('/api/stories')).stories;const others=homeStories.filter(s=>s.author.username!==me.username);const seen=new Set();const uniqueAuthors=[];others.forEach(s=>{if(!seen.has(s.author.username)){seen.add(s.author.username);uniqueAuthors.push(s.author)}});row.innerHTML=`<button class="story" data-story-mine="1"><div class="ring">${avatar(me)}</div>Your story +</button>`+uniqueAuthors.map(a=>`<button class="story" data-story-author="${esc(a.username)}"><div class="ring">${avatar(a)}</div>${esc((a.displayName||'').split(' ')[0])}</button>`).join('');row.querySelectorAll('[data-story-mine]').forEach(b=>b.onclick=()=>{addMode='story';uploadImage=null;uploadIsVideo=false;screen='add';render()});row.querySelectorAll('[data-story-author]').forEach(b=>b.onclick=()=>viewStoriesByAuthor(b.dataset.storyAuthor))}catch(e){}}
 function viewStoriesByAuthor(username){const items=homeStories.filter(s=>s.author.username===username);if(!items.length)return;openStoryViewer(items,0,items[0].author.displayName)}
@@ -326,6 +332,7 @@ function youtubeHubView() {
 }
 
 function openYouTubeModalPlayer(videoId) {
+  closeYouTubeModalPlayer();
   const videoObj = youtubeVideos.find(v => v.id === videoId);
   const title = videoObj ? videoObj.title : 'YouTube Video';
   const channel = videoObj ? videoObj.channelTitle : '';
@@ -335,7 +342,7 @@ function openYouTubeModalPlayer(videoId) {
     <div class="sheet-backdrop" data-close-ytsheet="1"></div>
     <div class="comment-drawer" style="max-height:90vh;padding:12px;background:#0d0d12">
       <div style="display:flex;align-items:center;justify-content:space-between;width:100%;margin-bottom:10px">
-        <b style="font-size:14px;color:#fff;display:flex;align-items:center;gap:6px">🔴 YouTube IFrame Player</b>
+        <b style="font-size:14px;color:#fff;display:flex;align-items:center;gap:6px">🔴 YouTube Player</b>
         <button data-close-ytsheet="1" style="background:#ffffff20;color:#fff;border:0;border-radius:50%;width:30px;height:30px;font-size:16px;cursor:pointer">✕</button>
       </div>
       <div style="position:relative;width:100%;padding-top:56.25%;background:#000;border-radius:14px;overflow:hidden">
@@ -351,8 +358,17 @@ function openYouTubeModalPlayer(videoId) {
   document.body.insertAdjacentHTML('beforeend', html);
   const sheet = document.querySelector('#ytplayersheet');
   sheet.querySelectorAll('[data-close-ytsheet]').forEach(el => {
-    el.onclick = () => sheet.remove();
+    el.onclick = closeYouTubeModalPlayer;
   });
+}
+
+function closeYouTubeModalPlayer() {
+  const sheet = document.querySelector('#ytplayersheet');
+  if (sheet) {
+    const iframe = sheet.querySelector('iframe');
+    if (iframe) iframe.src = '';
+    sheet.remove();
+  }
 }
 
 function bindYouTubeVideoCards() {
@@ -378,27 +394,32 @@ function bindYouTubePagination() {
   }
 }
 
-let ytShortsTab = 'all';
 let ytShortsFeed = [];
 let ytShortsLoading = false;
 let ytShortsNextToken = '';
 let likedShorts = new Set();
 let savedShorts = new Set();
 
+let ytShortsError = false;
+
 async function loadYouTubeShorts(token = '') {
   ytShortsLoading = true;
+  ytShortsError = false;
   try {
     const res = await api('/api/youtube/shorts?pageToken=' + encodeURIComponent(token));
-    if (res.shorts) {
+    if (res.shorts && res.shorts.length) {
       if (token) {
         ytShortsFeed = [...ytShortsFeed, ...res.shorts];
       } else {
         ytShortsFeed = res.shorts;
       }
       ytShortsNextToken = res.nextPageToken || '';
+    } else {
+      ytShortsError = true;
     }
   } catch (err) {
     console.error('Shorts error:', err);
+    ytShortsError = true;
   }
   ytShortsLoading = false;
   render();
@@ -414,172 +435,164 @@ async function loadReelsScreenData(){
 }
 
 function reelsScreen(){
-  if (ytShortsTab === 'yt_shorts') {
-    return renderYouTubeShortsFeed();
-  }
+  return renderYouTubeShortsFeed();
+}
 
-  const reelList = reelsData.length ? reelsData : posts.filter(p=>p.isReel);
-  if(!reelList.length){
-    return `<div class="reels-feed-wrap">
-      <div style="position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:90;display:flex;gap:8px;background:rgba(0,0,0,0.7);padding:4px 10px;border-radius:20px;backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.15)">
-        <button class="pill small ${ytShortsTab==='all'?'primary':'secondary'}" id="toggle-reels-all" style="padding:4px 12px;font-size:12px">🎬 All Reels</button>
-        <button class="pill small ${ytShortsTab==='yt_shorts'?'primary':'secondary'}" id="toggle-reels-yt" style="padding:4px 12px;font-size:12px">🔴 YouTube Shorts</button>
+function shortCardHtml(s) {
+  const isLiked = likedShorts.has(s.id);
+  const isSaved = savedShorts.has(s.id);
+  return `
+  <div class="reel-card" data-short-id="${s.id}" style="scroll-snap-align:start;height:100vh;position:relative;background:#000">
+    <iframe class="reel-video" src="https://www.youtube.com/embed/${s.id}?enablejsapi=1&autoplay=1&loop=1&playlist=${s.id}&controls=1&playsinline=1&rel=0" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="width:100%;height:100%;border:0;object-fit:cover"></iframe>
+    <div class="reel-overlay" style="position:absolute;bottom:70px;left:12px;right:70px;z-index:20;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,0.8)">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <div class="avatar" style="width:36px;height:36px;border-radius:50%;background:#ff0000;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff">▶</div>
+        <b style="color:#fff;font-size:14px">${esc(s.channelTitle)}</b>
       </div>
-      <div class="empty" style="padding-top:140px;text-align:center">No reels available right now.<br><br>Be the first to post a Reel!</div>
-      ${nav()}
-    </div>`;
+      <div style="font-size:13px;line-height:1.4;margin-bottom:6px;max-width:280px;font-weight:600">${esc(s.title)}</div>
+      <div style="font-size:12px;opacity:0.85;display:flex;align-items:center;gap:6px">👁️ ${s.viewCount} views · 🔴 YouTube Shorts</div>
+    </div>
+    <div class="reel-side-actions" style="position:absolute;bottom:80px;right:12px;z-index:20;display:flex;flex-direction:column;gap:14px;align-items:center">
+      <button class="reel-action-btn ${isLiked?'liked':''}" data-toggle-short-like="${s.id}">
+        <span>${isLiked?'❤️':'🤍'}</span>
+        <span style="font-size:11px">${isLiked ? 'Liked' : 'Like'}</span>
+      </button>
+      <button class="reel-action-btn ${isSaved?'liked':''}" data-toggle-short-save="${s.id}">
+        <span>${isSaved?'🔖':'📑'}</span>
+        <span style="font-size:11px">${isSaved ? 'Saved' : 'Save'}</span>
+      </button>
+      <button class="reel-action-btn" data-share-short="${s.id}">
+        <span>🚀</span>
+        <span style="font-size:11px">Share</span>
+      </button>
+    </div>
+  </div>
+`;
+}
+
+let ytShortsFetchingMore = false;
+async function loadMoreShorts() {
+  if (ytShortsFetchingMore || ytShortsLoading || !ytShortsNextToken) return;
+  ytShortsFetchingMore = true;
+  try {
+    const res = await api('/api/youtube/shorts?pageToken=' + encodeURIComponent(ytShortsNextToken));
+    const newShorts = res.shorts || [];
+    ytShortsFeed = [...ytShortsFeed, ...newShorts];
+    ytShortsNextToken = res.nextPageToken || '';
+    const container = document.querySelector('#shorts-vertical-container');
+    if (container && newShorts.length) {
+      container.insertAdjacentHTML('beforeend', newShorts.map(shortCardHtml).join(''));
+      bindShortsInteractions();
+      initReelsObserver();
+    }
+  } catch (err) {
+    console.error('Load more shorts failed:', err);
   }
-  
-  return `<div class="reels-feed-wrap">
-    <div style="position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:90;display:flex;gap:8px;background:rgba(0,0,0,0.7);padding:4px 10px;border-radius:20px;backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.15)">
-      <button class="pill small ${ytShortsTab==='all'?'primary':'secondary'}" id="toggle-reels-all" style="padding:4px 12px;font-size:12px">🎬 All Reels</button>
-      <button class="pill small ${ytShortsTab==='yt_shorts'?'primary':'secondary'}" id="toggle-reels-yt" style="padding:4px 12px;font-size:12px">🔴 YouTube Shorts</button>
-    </div>
-    <div class="reels-container" id="reels-container">
-      ${reelList.map((r, idx) => {
-        const isYt = r.platform === 'youtube';
-        let ytId = '3Z78y1k3W5Y';
-        if (r.image && !r.image.startsWith('http')) {
-          ytId = r.image;
-        } else if (r.externalUrl && r.externalUrl.includes('shorts/')) {
-          ytId = r.externalUrl.split('shorts/')[1].split('?')[0];
-        }
-        
-        const mediaPlayer = isYt 
-          ? `<iframe class="reel-video" src="https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&controls=1&loop=1&playlist=${ytId}&playsinline=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="width:100%;height:100%;border:0;object-fit:cover"></iframe>`
-          : `<video class="reel-video" src="${r.image && r.image.startsWith('http')?r.image:'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4'}" loop playsinline muted autoplay preload="auto" referrerpolicy="no-referrer" crossorigin="anonymous" style="width:100%;height:100%;object-fit:cover"></video>`;
-
-        const platformBadge = isYt 
-          ? `<button class="pill small" data-open-external="${r.externalUrl || 'https://www.youtube.com/shorts/' + ytId}" style="background:#ff0000;color:#fff;font-weight:700;padding:4px 10px;font-size:11px;border-radius:14px;border:0;cursor:pointer;display:flex;align-items:center;gap:4px">🔴 Open YouTube Shorts ↗</button>`
-          : `<button class="pill small" data-open-external="${r.externalUrl || 'https://www.instagram.com/reels/'}" style="background:linear-gradient(45deg,#833ab4,#fd1d1d,#fcb045);color:#fff;font-weight:700;padding:4px 10px;font-size:11px;border-radius:14px;border:0;cursor:pointer;display:flex;align-items:center;gap:4px">📸 Open Instagram Reel ↗</button>`;
-        
-        const followBtn = (r.author.isInstagram || isYt)
-          ? platformBadge
-          : `<button class="pill small primary" data-follow-user="${r.author.username}" style="padding:4px 12px;font-size:11px;border-radius:14px">${r.author.isFollowing?'Following':'Follow'}</button>`;
-        
-        const likeBtn = (r.isInstagram || isYt)
-          ? `<button class="reel-action-btn" style="opacity:0.4;cursor:not-allowed" onclick="toast('External reels par likes disabled hain')">
-              <span>🤍</span>
-              <span style="font-size:11px">Disabled</span>
-             </button>`
-          : `<button class="reel-action-btn ${r.liked?'liked':''}" data-like="${r.id}">
-              <span>${r.liked?'❤️':'🤍'}</span>
-              <span style="font-size:12px">${r.likes}</span>
-             </button>`;
-
-        return `
-        <div class="reel-card" data-reel-id="${r.id}" data-index="${idx}">
-          ${mediaPlayer}
-          <div class="reel-media-wrap" data-dbl-like="${r.id}">
-            <div class="heart-burst">❤️</div>
-          </div>
-          <div class="reel-overlay">
-            <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap">
-              ${avatar(r.author)}
-              <b style="color:#fff;font-size:14px;cursor:pointer" data-profile="${r.author.username}">${esc(r.author.displayName)}</b>
-              ${followBtn}
-            </div>
-            <div style="font-size:13px;line-height:1.4;margin-bottom:6px;max-width:280px">${esc(r.caption||'')}</div>
-            <div style="font-size:12px;opacity:0.85;display:flex;align-items:center;gap:6px;margin-bottom:6px">🎵 <span>Original Audio - ${esc(r.author.displayName)}</span></div>
-            <div style="font-size:11px;color:#fff;background:rgba(0,0,0,0.6);padding:3px 8px;border-radius:8px;display:inline-block">
-              ${isYt ? '🔴 YouTube Video Shorts' : '📸 Instagram Video Reel'} — Tap badge to open in ${isYt?'YouTube':'Instagram'}
-            </div>
-          </div>
-          <div class="reel-side-actions">
-            ${likeBtn}
-            <button class="reel-action-btn" data-open-comments="${r.id}">
-              <span>💬</span>
-              <span style="font-size:12px">${r.comments ? r.comments.length : 0}</span>
-            </button>
-            <button class="reel-action-btn" data-forward-post="${r.id}">
-              <span>🚀</span>
-              <span style="font-size:11px">Share</span>
-            </button>
-            <button class="reel-action-btn" data-save="${r.id}">
-              <span>${r.saved?'🔖':'📑'}</span>
-            </button>
-            <div style="margin-top:10px">
-              ${r.author.avatar ? `<img src="${r.author.avatar}" class="sound-disc">` : `<div class="sound-disc" style="background:var(--pink)"></div>`}
-            </div>
-          </div>
-        </div>
-      `;
-      }).join('')}
-    </div>
-    ${nav()}
-  </div>`;
+  ytShortsFetchingMore = false;
 }
 
 function renderYouTubeShortsFeed() {
-  if (!ytShortsFeed.length && !ytShortsLoading) {
-    loadYouTubeShorts();
+  if (ytShortsLoading) {
     return `<div class="reels-feed-wrap"><div class="empty" style="padding-top:140px;text-align:center">Loading YouTube Shorts... 🔴</div>${nav()}</div>`;
   }
 
-  return `<div class="reels-feed-wrap">
-    <div style="position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:90;display:flex;gap:8px;background:rgba(0,0,0,0.7);padding:4px 10px;border-radius:20px;backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.15)">
-      <button class="pill small ${ytShortsTab==='all'?'primary':'secondary'}" id="toggle-reels-all" style="padding:4px 12px;font-size:12px">🎬 All Reels</button>
-      <button class="pill small ${ytShortsTab==='yt_shorts'?'primary':'secondary'}" id="toggle-reels-yt" style="padding:4px 12px;font-size:12px;background:${ytShortsTab==='yt_shorts'?'#ff0000':''}">🔴 YouTube Shorts</button>
-    </div>
-    <div class="reels-container" id="shorts-vertical-container" style="scroll-snap-type:y mandatory;overflow-y:auto;height:100vh">
-      ${ytShortsFeed.map((s, idx) => {
-        const isLiked = likedShorts.has(s.id);
-        const isSaved = savedShorts.has(s.id);
+  if (!ytShortsFeed.length) {
+    if (!ytShortsError) {
+      loadYouTubeShorts();
+      return `<div class="reels-feed-wrap"><div class="empty" style="padding-top:140px;text-align:center">Loading YouTube Shorts... 🔴</div>${nav()}</div>`;
+    }
+    return `<div class="reels-feed-wrap"><div class="empty" style="padding-top:140px;text-align:center;color:var(--muted)">Shorts temporarily unavailable. <br><button class="pill primary" onclick="loadYouTubeShorts()" style="margin-top:12px">🔄 Retry</button></div>${nav()}</div>`;
+  }
 
-        return `
-        <div class="reel-card" data-short-id="${s.id}" data-index="${idx}" style="scroll-snap-align:start;height:100vh;position:relative;background:#000">
-          <iframe class="reel-video" src="https://www.youtube.com/embed/${s.id}?autoplay=1&enablejsapi=1&loop=1&playlist=${s.id}&controls=1&playsinline=1&rel=0" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="width:100%;height:100%;border:0;object-fit:cover"></iframe>
-          <div class="reel-overlay" style="position:absolute;bottom:70px;left:12px;right:70px;z-index:20;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,0.8)">
-            <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
-              <div class="avatar" style="width:36px;height:36px;border-radius:50%;background:#ff0000;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff">▶</div>
-              <b style="color:#fff;font-size:14px">${esc(s.channelTitle)}</b>
-            </div>
-            <div style="font-size:13px;line-height:1.4;margin-bottom:6px;max-width:280px;font-weight:600">${esc(s.title)}</div>
-            <div style="font-size:12px;opacity:0.85;display:flex;align-items:center;gap:6px">👁️ ${s.viewCount} views · 🔴 YouTube Shorts</div>
-          </div>
-          <div class="reel-side-actions" style="position:absolute;bottom:80px;right:12px;z-index:20;display:flex;flex-direction:column;gap:14px;align-items:center">
-            <button class="reel-action-btn ${isLiked?'liked':''}" data-toggle-short-like="${s.id}">
-              <span>${isLiked?'❤️':'🤍'}</span>
-              <span style="font-size:11px">${isLiked ? 'Liked' : (s.likeCount || 'Like')}</span>
-            </button>
-            <button class="reel-action-btn" data-share-short="${s.id}">
-              <span>🚀</span>
-              <span style="font-size:11px">Share</span>
-            </button>
-            <button class="reel-action-btn" data-toggle-short-save="${s.id}">
-              <span>${isSaved?'🔖':'📑'}</span>
-            </button>
-          </div>
-        </div>
-      `;
-      }).join('')}
+  return `<div class="reels-feed-wrap">
+    <div class="reels-container" id="shorts-vertical-container" style="scroll-snap-type:y mandatory;overflow-y:auto;height:100vh">
+      ${ytShortsFeed.map(shortCardHtml).join('')}
     </div>
     ${nav()}
   </div>`;
 }
 
+function bindShortsInteractions() {
+  document.querySelectorAll('[data-toggle-short-like]').forEach(btn => {
+    btn.onclick = () => {
+      const id = btn.dataset.toggleShortLike;
+      const nowLiked = !likedShorts.has(id);
+      if (nowLiked) likedShorts.add(id); else likedShorts.delete(id);
+      btn.classList.toggle('liked', nowLiked);
+      btn.innerHTML = `<span>${nowLiked?'❤️':'🤍'}</span><span style="font-size:11px">${nowLiked ? 'Liked' : 'Like'}</span>`;
+    };
+  });
+
+  document.querySelectorAll('[data-toggle-short-save]').forEach(btn => {
+    btn.onclick = () => {
+      const id = btn.dataset.toggleShortSave;
+      const nowSaved = !savedShorts.has(id);
+      if (nowSaved) savedShorts.add(id); else savedShorts.delete(id);
+      btn.classList.toggle('liked', nowSaved);
+      btn.innerHTML = `<span>${nowSaved?'🔖':'📑'}</span><span style="font-size:11px">${nowSaved ? 'Saved' : 'Save'}</span>`;
+      toast(nowSaved ? 'Short saved!' : 'Short removed from saved');
+    };
+  });
+
+  document.querySelectorAll('[data-share-short]').forEach(btn => {
+    btn.onclick = () => {
+      const id = btn.dataset.shareShort;
+      const link = `https://www.youtube.com/shorts/${id}`;
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(link);
+        toast('🔗 YouTube Short link copied!');
+      } else {
+        toast('Short: ' + link);
+      }
+    };
+  });
+}
+
 function initReelsObserver(){
-  const vids = document.querySelectorAll('.reel-video');
-  if(!vids.length) return;
+  const container = document.querySelector('#shorts-vertical-container');
+  if (container && !container.dataset.scrollBound) {
+    container.dataset.scrollBound = '1';
+    container.addEventListener('scroll', () => {
+      if (container.scrollTop + container.clientHeight >= container.scrollHeight - (window.innerHeight * 1.5)) {
+        loadMoreShorts();
+      }
+    });
+  }
+  const cards = document.querySelectorAll('.reel-card');
+  if(!cards.length) return;
   
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
-      const vid = entry.target;
-      if(entry.isIntersecting){
-        vid.play().catch(()=>{});
+      const card = entry.target;
+      const vid = card.querySelector('video');
+      const iframe = card.querySelector('iframe');
+      
+      if(entry.isIntersecting && entry.intersectionRatio >= 0.6){
+        if(vid){
+          vid.play().catch(()=>{});
+        }
+        if(iframe && iframe.contentWindow){
+          try {
+            iframe.contentWindow.postMessage('{"event":"command","func":"unMute","args":""}', '*');
+            iframe.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
+          } catch(e){}
+        }
       } else {
-        vid.pause();
+        if(vid){
+          vid.pause();
+          vid.currentTime = 0;
+        }
+        if(iframe && iframe.contentWindow){
+          try {
+            iframe.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
+            iframe.contentWindow.postMessage('{"event":"command","func":"mute","args":""}', '*');
+          } catch(e){}
+        }
       }
     });
   }, { threshold: 0.6 });
 
-  vids.forEach(v => {
-    observer.observe(v);
-    v.onclick = () => {
-      v.muted = !v.muted;
-      toast(v.muted ? '🔇 Muted' : '🔊 Sound On');
-    };
-  });
+  cards.forEach(c => observer.observe(c));
 }
 
 const FILTERS = [
@@ -862,6 +875,7 @@ function thread(){
       <div style="display:flex;align-items:center;gap:6px;background:var(--card2);border-radius:24px;padding:4px 12px;flex:1">
         <button type="button" class="icon" id="emoji-picker-btn" title="Emojis" style="font-size:18px;background:none;border:0;cursor:pointer;padding:0">😀</button>
         <input id="message" placeholder="Message" autocomplete="off" style="border:0;background:none;color:#fff;outline:none;font-size:15px;flex:1;padding:6px 0">
+        <button type="button" class="icon" id="mic-btn" title="Voice Note" style="font-size:18px;background:none;border:0;cursor:pointer;padding:0">🎙️</button>
         <label class="icon" style="cursor:pointer;font-size:18px" title="Send Song or File">📎<input id="doc-file" type="file" style="display:none"></label>
         <label class="icon" style="cursor:pointer;font-size:18px" title="Send Photo">📷<input id="dm-file" type="file" accept="image/*" style="display:none"></label>
       </div>
@@ -881,7 +895,7 @@ function thread(){
 
 function formatBytes(bytes){if(!bytes)return'';let k=1024,sizes=['B','KB','MB','GB'];let i=Math.floor(Math.log(bytes)/Math.log(k));return parseFloat((bytes/Math.pow(k,i)).toFixed(1))+' '+sizes[i]}
 
-function readMedia(e){let f=e.target.files[0];if(!f)return;const isVideo=addMode==='reel';const limit=isVideo?10*1024*1024:4*1024*1024;if(f.size>limit)return toast(isVideo?'Video 10 MB se chhoti choose karo.':'Please choose an image smaller than 4 MB.');uploadIsVideo=isVideo;let reader=new FileReader();reader.onload=()=>{uploadImage=reader.result;render()};reader.readAsDataURL(f)}
+function readMedia(e){let f=e.target.files[0];if(!f)return;const isVideo=addMode==='reel';const limit=isVideo?15*1024*1024:5*1024*1024;if(f.size>limit)return toast(isVideo?'Video 15 MB se chhoti choose karo.':'Please choose an image smaller than 5 MB.');uploadIsVideo=isVideo;let reader=new FileReader();reader.onload=()=>{uploadImage=reader.result;render()};reader.readAsDataURL(f)}
 async function sharePost(){try{if(addMode==='story'){await api('/api/stories',{method:'POST',body:JSON.stringify({image:uploadImage})});toast('Story shared!')}else{await api('/api/posts',{method:'POST',body:JSON.stringify({image:uploadImage,caption:document.querySelector('#caption').value,isReel:addMode==='reel',filter:selectedFilter})});toast(addMode==='reel'?'Reel shared!':'Post shared!')}uploadImage=null;uploadIsVideo=false;addMode='post';selectedFilter='normal';await loadPosts();screen='home';render()}catch(e){toast(e.message)}}
 async function like(id){try{await api('/api/posts/'+id+'/like',{method:'POST'});await loadPosts();render()}catch(e){toast(e.message)}}
 
@@ -1070,7 +1084,7 @@ function openEditProfileModal(){
     dpInput.onchange = e => {
       let f = e.target.files[0];
       if(!f) return;
-      if(f.size > 3.5*1024*1024) return toast('Photo 3.5 MB se chhoti choose karo');
+      if(f.size > 5*1024*1024) return toast('Photo 5 MB se chhoti choose karo');
       let reader = new FileReader();
       reader.onload = () => {
         tempAvatar = reader.result;
@@ -1141,7 +1155,7 @@ async function sendMessage(e){
   }catch(x){toast(x.message||'Unable to send message');input.value=text}finally{sending=false;btn.disabled=false;input.focus()}
 }
 
-function authView(){let signup=authTab==='signup';return `<section class="auth"><div class="authbox"><div class="hero"><h1>Nova</h1><div class="muted">${signup?'Create your account':'Sign in to Nova'}</div></div><div class="tabs"><button class="tab ${authTab==='login'?'on':''}" data-auth="login">Login</button><button class="tab ${signup?'on':''}" data-auth="signup">Sign up</button></div><form id="authform">${signup?`<label>Username</label><input id="username" autocomplete="username" required placeholder="your_username" value="${esc(signupDraft.username||'')}"><label>Display name</label><input id="displayName" required placeholder="Your name" value="${esc(signupDraft.displayName||'')}">`:''}<label>Gmail</label><input id="email" type="email" autocomplete="email" required placeholder="you@gmail.com" value="${esc(signupDraft.email||'')}"><label>Password</label><input id="password" type="password" inputmode="numeric" pattern="\\d{5}" maxlength="5" autocomplete="${signup?'new-password':'current-password'}" required placeholder="5-digit password">${signup?'<label>Confirm password</label><input id="confirmPassword" type="password" inputmode="numeric" pattern="\\d{5}" maxlength="5" autocomplete="new-password" required placeholder="Re-enter password">':''}<button class="primary">${signup?'Create account':'Login'}</button><div class="error" id="autherror"></div></form><div class="devcredit">Developer Name : Aman Kr</div></div></section>`}
+function authView(){let signup=authTab==='signup';return `<section class="auth"><div class="authbox"><div class="hero"><h1>Nova</h1><div class="muted">${signup?'Create your account':'Sign in to Nova'}</div></div><div class="tabs"><button class="tab ${authTab==='login'?'on':''}" data-auth="login">Login</button><button class="tab ${signup?'on':''}" data-auth="signup">Sign up</button></div><form id="authform">${signup?`<label>Username</label><input id="username" autocomplete="username" required placeholder="your_username" value="${esc(signupDraft.username||'')}"><label>Display name</label><input id="displayName" required placeholder="Your name" value="${esc(signupDraft.displayName||'')}">`:''}<label>${signup?'Email':'Email or Username'}</label><input id="email" type="${signup?'email':'text'}" autocomplete="${signup?'email':'username'}" required placeholder="${signup?'you@example.com':'you@example.com or username'}" value="${esc(signupDraft.email||'')}"><label>Password</label><input id="password" type="password" minlength="5" maxlength="72" autocomplete="${signup?'new-password':'current-password'}" required placeholder="At least 5 characters">${signup?'<label>Confirm password</label><input id="confirmPassword" type="password" minlength="5" maxlength="72" autocomplete="new-password" required placeholder="Re-enter password">':''}<button class="primary">${signup?'Create account':'Login'}</button><div class="error" id="autherror"></div></form><div class="devcredit">Developer Name : Aman Kr</div></div></section>`}
 async function login(e){e.preventDefault();let error=document.querySelector('#autherror');try{let email=(document.querySelector('#email').value||'').trim().toLowerCase();let password=document.querySelector('#password').value;let r;if(authTab==='signup'){let confirmPassword=document.querySelector('#confirmPassword').value;if(password!==confirmPassword)throw Error('Passwords do not match.');r=await api('/api/auth/signup',{method:'POST',body:JSON.stringify({username:document.querySelector('#username').value,displayName:document.querySelector('#displayName').value,email,password})})}else{r=await api('/api/auth/login',{method:'POST',body:JSON.stringify({email,password})})}token=r.token;localStorage.setItem('nova_token',token);me=r.user;await loadPosts();await loadUnreadCounts();connectWS();screen='home';render()}catch(x){error.textContent=x.message}}
 
 function renderTop(){
@@ -1171,6 +1185,8 @@ function post(p){
     : `<button class="${p.liked?'liked':''}" data-like="${p.id}">♥</button>`;
 
   const shareBtn = `<button data-forward-post="${p.id}" title="Share to DM">🚀</button>`;
+  const isOwner = me && p.author && me.id === p.author.id;
+  const deleteBtn = isOwner ? `<button data-delete-post="${p.id}" style="background:none;border:0;color:var(--muted);font-size:16px;cursor:pointer;margin-left:auto" title="Delete Post">🗑️</button>` : '';
 
   return `<article class="post">
     <div class="posthead">
@@ -1182,6 +1198,7 @@ function post(p){
         </div>
         <div class="muted small">@${esc(p.author.username)} · ${ago(p.createdAt)}</div>
       </div>
+      ${deleteBtn}
     </div>
     ${media}
     <div class="actions">
@@ -1228,6 +1245,7 @@ function renderCommentsDrawer(postId, comments){
             <b>${esc(c.user.displayName)}</b> <span class="muted small">@${esc(c.user.username)} · ${ago(c.createdAt)}</span>
             <div style="margin-top:2px">${esc(c.text)}</div>
             <button class="link small" data-reply-tag="${esc(c.user.username)}" style="margin-top:3px;font-weight:700">Reply</button>
+            ${(me && me.username === c.user.username) ? `<button class="link small" data-delete-comment="${c.id}" style="margin-top:3px;margin-left:8px;color:#ff4d4d;font-weight:700">Delete</button>` : ''}
           </div>
           <button class="comment-heart ${c.liked?'liked':''}" data-like-comment="${c.id}">♥ <span style="font-size:11px">${c.likesCount||''}</span></button>
         </div>
@@ -1244,6 +1262,17 @@ function renderCommentsDrawer(postId, comments){
   const sheet = document.querySelector('#commentsheet');
   sheet.onclick = e => { if(e.target.id==='commentsheet') sheet.remove(); };
   sheet.querySelector('[data-act="close"]').onclick = () => sheet.remove();
+  
+  sheet.querySelectorAll('[data-delete-comment]').forEach(b=>{
+    b.onclick = async () => {
+      if(!confirm('Delete this comment?')) return;
+      try {
+        await api('/api/comments/'+b.dataset.deleteComment, {method:'DELETE'});
+        openCommentsDrawer(postId);
+        await loadPosts();
+      } catch(x){toast(x.message)}
+    };
+  });
   
   sheet.querySelectorAll('[data-like-comment]').forEach(b=>{
     b.onclick = async () => {
@@ -1387,6 +1416,17 @@ function bind(){
   document.querySelectorAll('[data-profile]').forEach(e=>e.onclick=()=>openProfile(e.dataset.profile));
   document.querySelectorAll('[data-like]').forEach(e=>e.onclick=()=>like(e.dataset.like));
   document.querySelectorAll('[data-save]').forEach(e=>e.onclick=()=>savePost(e.dataset.save));
+  document.querySelectorAll('[data-delete-post]').forEach(b=>{
+    b.onclick = async () => {
+      if(!confirm('Are you sure you want to delete this post?')) return;
+      try {
+        await api('/api/posts/'+b.dataset.deletePost, {method:'DELETE'});
+        toast('Post deleted');
+        await loadPosts();
+        render();
+      } catch(x){toast(x.message)}
+    };
+  });
   document.querySelectorAll('[data-open-comments]').forEach(e=>e.onclick=()=>openCommentsDrawer(e.dataset.openComments));
   document.querySelectorAll('[data-comment]').forEach(f=>f.onsubmit=async e=>{
     e.preventDefault();
@@ -1443,7 +1483,7 @@ function bind(){
     dmFileInput.onchange = e => {
       let f = e.target.files[0];
       if(!f) return;
-      if(f.size > 4*1024*1024) return toast('Image 4 MB se chhoti choose karo');
+      if(f.size > 5*1024*1024) return toast('Image 5 MB se chhoti choose karo');
       let r = new FileReader();
       r.onload = () => { dmImage = r.result; render(); };
       r.readAsDataURL(f);
@@ -1556,42 +1596,7 @@ function bind(){
   }
 
   /* YouTube Shorts Feed Actions */
-  let toggleAllReels = document.querySelector('#toggle-reels-all');
-  if(toggleAllReels) toggleAllReels.onclick = () => { ytShortsTab = 'all'; render(); };
-  let toggleYtShorts = document.querySelector('#toggle-reels-yt');
-  if(toggleYtShorts) toggleYtShorts.onclick = () => { ytShortsTab = 'yt_shorts'; render(); };
-
-  document.querySelectorAll('[data-toggle-short-like]').forEach(btn => {
-    btn.onclick = () => {
-      const id = btn.dataset.toggleShortLike;
-      if (likedShorts.has(id)) likedShorts.delete(id);
-      else likedShorts.add(id);
-      render();
-    };
-  });
-
-  document.querySelectorAll('[data-toggle-short-save]').forEach(btn => {
-    btn.onclick = () => {
-      const id = btn.dataset.toggleShortSave;
-      if (savedShorts.has(id)) savedShorts.delete(id);
-      else savedShorts.add(id);
-      toast(savedShorts.has(id) ? 'Short saved!' : 'Short removed from saved');
-      render();
-    };
-  });
-
-  document.querySelectorAll('[data-share-short]').forEach(btn => {
-    btn.onclick = () => {
-      const id = btn.dataset.shareShort;
-      const link = `https://www.youtube.com/shorts/${id}`;
-      if (navigator.clipboard) {
-        navigator.clipboard.writeText(link);
-        toast('🔗 YouTube Short link copied!');
-      } else {
-        toast('Short: ' + link);
-      }
-    };
-  });
+  bindShortsInteractions();
 
 function openQuickEmojiPicker(){
   const existing = document.querySelector('#emojipickerpopover');
@@ -1834,15 +1839,18 @@ function setupPeerConnection(targetUsername){
   pc.onicecandidate=e=>{if(e.candidate)wsSendMsg({type:'call:ice',to:targetUsername,candidate:e.candidate})};
   pc.ontrack=e=>{
     let rv = document.querySelector('#remoteVideo');
-    if(rv) rv.srcObject = e.streams[0];
-    let ra = document.querySelector('#remoteAudio');
-    if(!ra){
-      ra = document.createElement('audio');
-      ra.id = 'remoteAudio';
-      ra.autoplay = true;
-      document.body.appendChild(ra);
+    if(rv){
+      rv.srcObject = e.streams[0];
+    } else {
+      let ra = document.querySelector('#remoteAudio');
+      if(!ra){
+        ra = document.createElement('audio');
+        ra.id = 'remoteAudio';
+        ra.autoplay = true;
+        document.body.appendChild(ra);
+      }
+      ra.srcObject = e.streams[0];
     }
-    ra.srcObject = e.streams[0];
   };
   pc.onconnectionstatechange=()=>{
     if(!pc)return;
@@ -1946,19 +1954,292 @@ async function handleCallSignal(data){
   }
 }
 
+let activeNotes = [];
+let noteSelectedSong = null;
+
+async function loadNotes() {
+  if(!me) return;
+  try {
+    const res = await api('/api/notes');
+    activeNotes = res.notes || [];
+    let row = document.querySelector('#instagram-notes-row');
+    if(row) row.innerHTML = renderNotesRowContent();
+  } catch(e) {}
+}
+
+function renderNotesRowContent() {
+  if(!me) return '';
+  const myNote = activeNotes.find(n => n.userId === me.id);
+  const otherNotes = activeNotes.filter(n => n.userId !== me.id);
+
+  const myBubbleTxt = myNote ? (myNote.song ? `🎵 ${esc(myNote.song.title)}` : (myNote.text ? esc(myNote.text) : 'Your note')) : 'Share a note...';
+
+  return `
+    <div style="display:flex;align-items:center;gap:18px;padding:12px 14px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch">
+      <!-- Your Note -->
+      <div style="display:flex;flex-direction:column;align-items:center;cursor:pointer;flex-shrink:0;scroll-snap-align:start" onclick="openCreateNoteModal()">
+        <div style="position:relative;margin-bottom:4px;margin-top:20px">
+          <div style="position:absolute;top:-26px;left:50%;transform:translateX(-50%);background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:4px 10px;font-size:11px;font-weight:700;color:#fff;white-space:nowrap;max-width:110px;overflow:hidden;text-overflow:ellipsis;box-shadow:0 4px 12px rgba(0,0,0,0.5);z-index:5">
+            ${myBubbleTxt}
+            <div style="position:absolute;bottom:-4px;left:50%;transform:translateX(-50%) rotate(45deg);width:7px;height:7px;background:var(--card2);border-right:1px solid var(--border);border-bottom:1px solid var(--border)"></div>
+          </div>
+          <div class="pring" style="width:62px;height:62px">${avatar(me)}</div>
+          <span style="position:absolute;bottom:0;right:0;background:var(--pink);color:#fff;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;border:2px solid #000">+</span>
+        </div>
+        <span style="font-size:12px;color:var(--muted);margin-top:2px">Your note</span>
+      </div>
+
+      <!-- Other Users' Notes -->
+      ${otherNotes.map(n => {
+        const bubbleContent = n.song 
+          ? `<div style="display:flex;align-items:center;gap:4px;color:#ff3366"><span style="font-size:11px">🎵</span> <span style="max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px">${esc(n.song.title)}</span></div><div class="small muted" style="max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:9px">${esc(n.song.artist)}</div>`
+          : esc(n.text);
+
+        return `
+        <div style="display:flex;flex-direction:column;align-items:center;cursor:pointer;flex-shrink:0;scroll-snap-align:start" onclick="playNoteSong('${n.song ? esc(n.song.url) : ''}', '${esc(n.user.displayName)}')">
+          <div style="position:relative;margin-bottom:4px;margin-top:20px">
+            <div style="position:absolute;top:-28px;left:50%;transform:translateX(-50%);background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:4px 10px;font-size:11px;font-weight:700;color:#fff;white-space:nowrap;max-width:120px;box-shadow:0 4px 12px rgba(0,0,0,0.5);z-index:5">
+              ${bubbleContent}
+              <div style="position:absolute;bottom:-4px;left:50%;transform:translateX(-50%) rotate(45deg);width:7px;height:7px;background:var(--card2);border-right:1px solid var(--border);border-bottom:1px solid var(--border)"></div>
+            </div>
+            <div class="pring" style="width:62px;height:62px">${avatar(n.user)}</div>
+          </div>
+          <span style="font-size:12px;color:#fff;margin-top:2px">${esc((n.user.displayName||'').split(' ')[0])}</span>
+        </div>
+      `;
+      }).join('')}
+    </div>
+  `;
+}
+
+function playNoteSong(url, name) {
+  if(!url) return toast(name + ' ka text note hai');
+  const audio = new Audio(url);
+  audio.play().catch(()=>{});
+  toast('🎵 Playing song from ' + name + '\'s note...');
+}
+
+function openCreateNoteModal() {
+  noteSelectedSong = null;
+  const myNote = activeNotes.find(n => n.userId === me.id);
+  const existingTxt = myNote ? (myNote.text || '') : '';
+
+  const html = `
+  <div class="sheet" id="notesheet" style="z-index:160">
+    <div class="sheet-backdrop" data-close-notesheet="1"></div>
+    <div class="comment-drawer" style="align-items:center;text-align:center">
+      <div style="display:flex;align-items:center;justify-content:space-between;width:100%;margin-bottom:12px">
+        <b style="font-size:16px;color:#fff">New Note</b>
+        <button data-close-notesheet="1" style="background:none;border:0;color:var(--muted);font-size:18px;cursor:pointer">✕</button>
+      </div>
+
+      <div style="position:relative;margin-bottom:14px;margin-top:10px">
+        <div id="note-bubble-preview" style="position:absolute;top:-28px;left:50%;transform:translateX(-50%);background:var(--card2);border:1px solid var(--pink);border-radius:14px;padding:5px 12px;font-size:12px;font-weight:700;color:#fff;white-space:nowrap;max-width:180px;overflow:hidden;text-overflow:ellipsis;box-shadow:0 4px 15px rgba(224,64,122,0.4);z-index:5">
+          ${myNote && myNote.song ? '🎵 ' + esc(myNote.song.title) : 'Share a thought...'}
+          <div style="position:absolute;bottom:-4px;left:50%;transform:translateX(-50%) rotate(45deg);width:7px;height:7px;background:var(--card2);border-right:1px solid var(--pink);border-bottom:1px solid var(--pink)"></div>
+        </div>
+        <div class="pring" style="width:70px;height:70px;margin:0 auto">${avatar(me)}</div>
+      </div>
+
+      <input id="note-text-inp" class="search" maxLength="60" value="${esc(existingTxt)}" placeholder="Share a thought (max 60 chars)..." style="margin-bottom:12px;border-radius:12px;text-align:center;font-size:14px">
+
+      <div id="note-song-card-area" style="width:100%;margin-bottom:14px">
+        ${myNote && myNote.song ? `
+          <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:8px 12px;display:flex;align-items:center;gap:10px;text-align:left">
+            <img src="${myNote.song.cover}" style="width:40px;height:40px;border-radius:8px;object-fit:cover">
+            <div style="flex:1;min-width:0">
+              <b style="font-size:13px;color:#fff;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">🎵 ${esc(myNote.song.title)}</b>
+              <div class="small muted">${esc(myNote.song.artist)}</div>
+            </div>
+            <button id="remove-note-song" style="background:none;border:0;color:var(--pink);font-size:16px;cursor:pointer">✕</button>
+          </div>
+        ` : `
+          <button class="pill secondary" id="pick-note-song-btn" style="width:100%;padding:10px;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:8px;font-weight:700">
+            🎵 Add Music / Song to Note
+          </button>
+        `}
+      </div>
+
+      <div style="display:flex;gap:10px;width:100%">
+        ${myNote ? `<button class="pill danger" id="delete-note-btn" style="padding:12px;flex:1;border-radius:12px;font-weight:700">Delete note</button>` : ''}
+        <button class="primary" id="save-note-btn" style="padding:12px;flex:2;border-radius:12px;font-size:15px;font-weight:700">Share Note</button>
+      </div>
+    </div>
+  </div>`;
+
+  document.body.insertAdjacentHTML('beforeend', html);
+  const sheet = document.querySelector('#notesheet');
+  sheet.querySelector('[data-close-notesheet]').onclick = () => sheet.remove();
+
+  const pickSongBtn = sheet.querySelector('#pick-note-song-btn');
+  if(pickSongBtn){
+    pickSongBtn.onclick = () => openMusicSearchForNote(sheet);
+  }
+
+  const removeSongBtn = sheet.querySelector('#remove-note-song');
+  if(removeSongBtn){
+    removeSongBtn.onclick = () => {
+      noteSelectedSong = null;
+      if(myNote) myNote.song = null;
+      sheet.querySelector('#note-song-card-area').innerHTML = `
+        <button class="pill secondary" id="pick-note-song-btn" style="width:100%;padding:10px;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:8px;font-weight:700">
+          🎵 Add Music / Song to Note
+        </button>
+      `;
+      sheet.querySelector('#pick-note-song-btn').onclick = () => openMusicSearchForNote(sheet);
+    };
+  }
+
+  const deleteBtn = sheet.querySelector('#delete-note-btn');
+  if(deleteBtn){
+    deleteBtn.onclick = async () => {
+      try {
+        await api('/api/notes', { method: 'DELETE' });
+        sheet.remove();
+        await loadNotes();
+        toast('Note deleted');
+      } catch(e){ toast(e.message); }
+    };
+  }
+
+  sheet.querySelector('#save-note-btn').onclick = async () => {
+    const textVal = sheet.querySelector('#note-text-inp').value.trim();
+    try {
+      await api('/api/notes', {
+        method: 'POST',
+        body: JSON.stringify({
+          text: textVal,
+          song: noteSelectedSong || (myNote ? myNote.song : null)
+        })
+      });
+      sheet.remove();
+      await loadNotes();
+      toast('🎉 Note shared!');
+    } catch(err) { toast(err.message || 'Failed to share note'); }
+  };
+}
+
+async function openMusicSearchForNote(parentSheet) {
+  const html = `
+  <div class="sheet" id="notesongsearchsheet" style="z-index:200">
+    <div class="sheet-backdrop" data-close-notesongsheet="1"></div>
+    <div class="comment-drawer" style="max-height:80vh">
+      <div style="display:flex;align-items:center;justify-content:space-between;width:100%;margin-bottom:12px">
+        <b style="font-size:16px;color:#fff">Select Song for Note</b>
+        <button data-close-notesongsheet="1" style="background:none;border:0;color:var(--muted);font-size:18px;cursor:pointer">✕</button>
+      </div>
+      <input class="search" id="note-song-query" placeholder="🔍 Search any song by title or artist..." style="margin-bottom:12px;border-radius:12px">
+      <div id="note-song-results" style="max-height:50vh;overflow-y:auto;width:100%">
+        <div style="text-align:center;padding:20px;color:var(--muted)">Search live songs above...</div>
+      </div>
+    </div>
+  </div>`;
+
+  document.body.insertAdjacentHTML('beforeend', html);
+  const songSheet = document.querySelector('#notesongsearchsheet');
+  songSheet.querySelector('[data-close-notesongsheet]').onclick = () => songSheet.remove();
+
+  const queryInp = songSheet.querySelector('#note-song-query');
+  let searchT = null;
+
+  queryInp.oninput = () => {
+    clearTimeout(searchT);
+    searchT = setTimeout(async () => {
+      const q = queryInp.value.trim();
+      if(!q) return;
+      const resBox = songSheet.querySelector('#note-song-results');
+      resBox.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted)">Searching JioSaavn Live Songs...</div>';
+      try {
+        const data = await api('/api/music/search?q=' + encodeURIComponent(q));
+        const songs = data.songs || [];
+        if(!songs.length){
+          resBox.innerHTML = '<div class="empty">No songs found.</div>';
+          return;
+        }
+        resBox.innerHTML = songs.map(s => `
+          <div class="song-card-item" data-select-note-song="${s.id}" style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border);cursor:pointer">
+            <img src="${s.cover}" style="width:44px;height:44px;border-radius:8px;object-fit:cover">
+            <div style="flex:1;min-width:0">
+              <b style="font-size:14px;color:#fff;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(s.title)}</b>
+              <div class="small muted" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(s.artist)}</div>
+            </div>
+            <button class="pill primary small" style="padding:4px 12px">Select</button>
+          </div>
+        `).join('');
+
+        resBox.querySelectorAll('[data-select-note-song]').forEach(item => {
+          item.onclick = () => {
+            const songObj = songs.find(x => x.id === item.dataset.selectNoteSong);
+            if(songObj){
+              noteSelectedSong = songObj;
+              songSheet.remove();
+              const area = parentSheet.querySelector('#note-song-card-area');
+              area.innerHTML = `
+                <div style="background:var(--card2);border:1px solid var(--pink);border-radius:12px;padding:8px 12px;display:flex;align-items:center;gap:10px;text-align:left">
+                  <img src="${songObj.cover}" style="width:40px;height:40px;border-radius:8px;object-fit:cover">
+                  <div style="flex:1;min-width:0">
+                    <b style="font-size:13px;color:#fff;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">🎵 ${esc(songObj.title)}</b>
+                    <div class="small muted">${esc(songObj.artist)}</div>
+                  </div>
+                  <button id="remove-note-song" style="background:none;border:0;color:var(--pink);font-size:16px;cursor:pointer">✕</button>
+                </div>
+              `;
+              const prev = parentSheet.querySelector('#note-bubble-preview');
+              if(prev) prev.innerHTML = `🎵 ${esc(songObj.title)}<div style="position:absolute;bottom:-4px;left:50%;transform:translateX(-50%) rotate(45deg);width:7px;height:7px;background:var(--card2);border-right:1px solid var(--pink);border-bottom:1px solid var(--pink)"></div>`;
+            }
+          };
+        });
+      } catch(e){ resBox.innerHTML = '<div class="empty">Failed to fetch songs.</div>'; }
+    }, 400);
+  };
+}
+
 function renderCallOverlay(){
   let el=document.querySelector('#calloverlay');if(el)el.remove();
   if(!callState)return;
   const person=callState==='ringing'?{displayName:incomingCall.fromName||incomingCall.from,avatar:incomingCall.fromAvatar}:(callPartnerUser||{});
-  const callTypeLabel = isVideoCall ? 'Video Call' : 'Audio Call';
-  const status=callState==='calling'?`Calling (${callTypeLabel})...`:callState==='ringing'?`Incoming ${callTypeLabel}`:'<span id="call-timer">00:00</span>';
+  const statusTxt = callState==='calling' ? 'Calling...' : (callState==='ringing' ? 'Incoming Call' : '<span id="call-timer">00:00</span>');
   
-  let mediaElements = '';
   if(isVideoCall && callState==='active'){
-    mediaElements = `
-      <video id="remoteVideo" autoplay playsinline style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;background:#000"></video>
-      <video id="localVideo" autoplay playsinline muted style="position:absolute;top:20px;right:20px;width:100px;height:140px;border-radius:12px;object-fit:cover;border:2px solid #ffffff60;z-index:10;background:#111"></video>
-    `;
+    const html = `
+    <div id="calloverlay" style="position:fixed;inset:0;background:#0d0d12;z-index:999;display:flex;flex-direction:column;justify-content:space-between">
+      <video id="remoteVideo" autoplay playsinline style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;background:#000"></video>
+      
+      <div style="position:relative;z-index:10;display:flex;align-items:center;justify-content:space-between;padding:16px 18px;background:linear-gradient(to bottom, rgba(0,0,0,0.7), transparent)">
+        <button style="background:rgba(255,255,255,0.2);color:#fff;border:0;width:38px;height:38px;border-radius:50%;font-size:18px;cursor:pointer" onclick="toast('Minimized call')">⤢</button>
+        <div style="text-align:center">
+          <b style="color:#fff;font-size:15px;display:block;text-shadow:0 1px 3px rgba(0,0,0,0.8)">${esc(person.displayName || 'Video Call')}</b>
+          <div class="small" style="color:rgba(255,255,255,0.85);font-size:12px">${statusTxt}</div>
+        </div>
+        <button style="background:rgba(255,255,255,0.2);color:#fff;border:0;width:38px;height:38px;border-radius:50%;font-size:18px;cursor:pointer" onclick="toast('Add member available soon')">👤+</button>
+      </div>
+
+      <div style="position:absolute;bottom:100px;right:16px;z-index:10;width:120px;height:170px;border-radius:18px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,0.6);border:2px solid rgba(255,255,255,0.3);background:#111">
+        <video id="localVideo" autoplay playsinline muted style="width:100%;height:100%;object-fit:cover"></video>
+        <div style="position:absolute;top:6px;right:6px;display:flex;flex-direction:column;gap:6px">
+          <button style="background:rgba(0,0,0,0.6);color:#fff;border:0;border-radius:50%;width:26px;height:26px;font-size:12px;cursor:pointer" id="flip-cam-btn">🔄</button>
+        </div>
+      </div>
+
+      <div style="position:relative;z-index:10;padding-bottom:30px;display:flex;justify-content:center">
+        <div style="background:rgba(20,20,28,0.85);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,0.15);border-radius:35px;padding:8px 16px;display:flex;align-items:center;gap:12px;box-shadow:0 10px 30px rgba(0,0,0,0.5)">
+          <button style="background:rgba(255,255,255,0.15);color:#fff;border:0;border-radius:50%;width:44px;height:44px;font-size:18px;cursor:pointer" title="More">⋮</button>
+          <button style="background:${cameraOff?'#ff4d4d':'rgba(255,255,255,0.15)'};color:#fff;border:0;border-radius:50%;width:44px;height:44px;font-size:18px;cursor:pointer" id="toggle-cam-btn" title="Camera">${cameraOff?'📷':'📹'}</button>
+          <button style="background:rgba(255,255,255,0.15);color:#fff;border:0;border-radius:50%;width:44px;height:44px;font-size:18px;cursor:pointer" id="toggle-speaker-btn" title="Speaker">🔊</button>
+          <button style="background:${micMuted?'#ff4d4d':'rgba(255,255,255,0.15)'};color:#fff;border:0;border-radius:50%;width:44px;height:44px;font-size:18px;cursor:pointer" id="toggle-mic-btn" title="Microphone">${micMuted?'🔇':'🎙️'}</button>
+          <button style="background:#ff3b30;color:#fff;border:0;border-radius:50%;width:48px;height:48px;font-size:20px;cursor:pointer;box-shadow:0 4px 12px rgba(255,59,48,0.4)" id="end-call" title="End Call">📞</button>
+        </div>
+      </div>
+    </div>`;
+
+    document.body.insertAdjacentHTML('beforeend', html);
+    const lv = document.querySelector('#localVideo');
+    if(lv && localStream) lv.srcObject = localStream;
+
+    const end = document.querySelector('#end-call'); if(end) end.onclick = () => endCall(true);
+    const micBtn = document.querySelector('#toggle-mic-btn'); if(micBtn) micBtn.onclick = toggleMic;
+    const camBtn = document.querySelector('#toggle-cam-btn'); if(camBtn) camBtn.onclick = toggleCamera;
+    return;
   }
 
   const controls = `
@@ -1967,12 +2248,11 @@ function renderCallOverlay(){
     <button class="pill danger" id="end-call">End call</button>
   `;
 
-  const html=`<div id="calloverlay" class="calloverlay" style="${isVideoCall&&callState==='active'?'padding:0':''}">
-    ${mediaElements}
-    <div class="callcard" style="${isVideoCall&&callState==='active'?'position:absolute;bottom:30px;z-index:20;background:#000000a0;padding:16px 24px;border-radius:20px;backdrop-filter:blur(10px)':''}">
-      ${(isVideoCall&&callState==='active')?'':avatar(person,'big')}
+  const html = `<div id="calloverlay" class="calloverlay">
+    <div class="callcard">
+      ${avatar(person,'big')}
       <h3>${esc(person.displayName||'')}</h3>
-      <p class="muted">${status}</p>
+      <p class="muted">${statusTxt}</p>
       <div class="callactions">
         ${callState==='ringing'?'<button class="pill danger" id="decline-call">Decline</button><button class="pill primary" id="accept-call">Accept</button>':controls}
       </div>
@@ -1980,11 +2260,6 @@ function renderCallOverlay(){
   </div>`;
   
   document.body.insertAdjacentHTML('beforeend',html);
-  
-  if(isVideoCall && callState==='active' && localStream){
-    const lv = document.querySelector('#localVideo');
-    if(lv) lv.srcObject = localStream;
-  }
 
   const dec=document.querySelector('#decline-call');if(dec)dec.onclick=declineCall;
   const acc=document.querySelector('#accept-call');if(acc)acc.onclick=acceptCall;

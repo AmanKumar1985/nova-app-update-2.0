@@ -51,4 +51,3 @@ Gmail remains available as a fallback with `GMAIL_USER` and `GMAIL_APP_PASSWORD`
 - Login, signup, OTP, and posting endpoints have basic rate limits.
 - The SQLite database and `.env` are not served as static files.
 - Image uploads are validated and size-limited.
-"# nova-app-update-2.0" 

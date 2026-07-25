@@ -180,16 +180,202 @@ function explore(){
   if(exploreTab==='reels') filteredPosts = posts.filter(p=>p.isReel);
   else if(exploreTab==='photos') filteredPosts = posts.filter(p=>!p.isReel);
   
+  const content = exploreTab==='youtube' 
+    ? youtubeHubView() 
+    : (exploreTab==='people'
+        ? `<input class="search" id="search" value="${esc(query)}" placeholder="Search people by name or username"><div id="results"></div>`
+        : `<input class="search" id="search" value="${esc(query)}" placeholder="Search people by name or username"><div id="results"></div><div class="grid">${filteredPosts.map(p=> p.isReel ? `<video src="${p.image}" class="gridvid" muted loop playsinline data-preview-post="${p.id}"></video>` : `<img src="${p.image}" class="filter-${p.filter||'normal'}" data-preview-post="${p.id}">`).join('')}</div>`);
+
   return `${renderTop()}
   <div class="cat-pills">
     <button class="cat-pill ${exploreTab==='all'?'on':''}" data-exp-tab="all">All</button>
+    <button class="cat-pill ${exploreTab==='youtube'?'on':''}" data-exp-tab="youtube" style="color:${exploreTab==='youtube'?'#fff':'#ff4d4d'};font-weight:700">🔴 YouTube</button>
     <button class="cat-pill ${exploreTab==='reels'?'on':''}" data-exp-tab="reels">🎬 Reels</button>
     <button class="cat-pill ${exploreTab==='photos'?'on':''}" data-exp-tab="photos">📷 Photos</button>
     <button class="cat-pill ${exploreTab==='people'?'on':''}" data-exp-tab="people">👤 People</button>
   </div>
-  ${exploreTab==='people'?'':`<input class="search" id="search" value="${esc(query)}" placeholder="Search people by name or username"><div id="results"></div>`}
-  ${exploreTab==='people'?`<input class="search" id="search" value="${esc(query)}" placeholder="Search people by name or username"><div id="results"></div>`:`<div class="grid">${filteredPosts.map(p=> p.isReel ? `<video src="${p.image}" class="gridvid" muted loop playsinline data-preview-post="${p.id}"></video>` : `<img src="${p.image}" class="filter-${p.filter||'normal'}" data-preview-post="${p.id}">`).join('')}</div>`}
+  ${content}
   ${nav()}`;
+}
+
+let youtubeQuery = 'trending';
+let youtubeCategory = 'trending';
+let youtubeVideos = [];
+let youtubeLoading = false;
+let youtubeError = '';
+let youtubeNextToken = '';
+let youtubePrevToken = '';
+let youtubeSearchDebounce = null;
+
+async function fetchYouTubeVideos(q = 'trending', token = '') {
+  youtubeLoading = true;
+  youtubeError = '';
+  let grid = document.querySelector('#yt-videos-grid');
+  if (grid) grid.innerHTML = renderYouTubeShimmerPlaceholders();
+  try {
+    const res = await api(`/api/youtube/search?q=${encodeURIComponent(q)}&pageToken=${encodeURIComponent(token)}`);
+    if (res.error) {
+      youtubeError = res.error;
+      youtubeVideos = [];
+    } else {
+      youtubeVideos = res.videos || [];
+      youtubeNextToken = res.nextPageToken || '';
+      youtubePrevToken = res.prevPageToken || '';
+    }
+  } catch (err) {
+    youtubeError = err.message || 'Failed to fetch YouTube videos';
+    youtubeVideos = [];
+  }
+  youtubeLoading = false;
+  grid = document.querySelector('#yt-videos-grid');
+  if (grid) {
+    grid.innerHTML = renderYouTubeVideosContent();
+    bindYouTubeVideoCards();
+  }
+  let pag = document.querySelector('#yt-pagination-bar');
+  if (pag) {
+    pag.innerHTML = renderYouTubePaginationBar();
+    bindYouTubePagination();
+  }
+}
+
+function renderYouTubeShimmerPlaceholders() {
+  return Array(6).fill(0).map(() => `
+    <div class="yt-card shimmer-card" style="background:var(--card2);border-radius:14px;overflow:hidden;margin-bottom:14px">
+      <div style="width:100%;height:180px;background:var(--border);animation:pulseGlow 1.5s infinite"></div>
+      <div style="padding:12px">
+        <div style="width:85%;height:16px;background:var(--border);border-radius:4px;margin-bottom:8px;animation:pulseGlow 1.5s infinite"></div>
+        <div style="width:50%;height:12px;background:var(--border);border-radius:4px;animation:pulseGlow 1.5s infinite"></div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderYouTubeVideosContent() {
+  if (youtubeLoading) return renderYouTubeShimmerPlaceholders();
+  if (youtubeError) {
+    return `
+      <div style="grid-column:1/-1;text-align:center;padding:35px 15px;background:var(--card2);border-radius:16px;margin:15px 0">
+        <div style="font-size:36px;margin-bottom:10px">⚠️</div>
+        <b style="color:#fff;font-size:16px">YouTube API Notice</b>
+        <p style="color:var(--muted);font-size:13px;margin:8px 0 14px 0">${esc(youtubeError)}</p>
+        <button class="primary small" onclick="fetchYouTubeVideos(youtubeQuery||'trending')" style="padding:8px 18px">🔄 Retry</button>
+      </div>
+    `;
+  }
+  if (!youtubeVideos.length) {
+    return `<div style="grid-column:1/-1;text-align:center;padding:40px 15px;color:var(--muted)">No YouTube videos found. Try another search query.</div>`;
+  }
+
+  return youtubeVideos.map(v => `
+    <div class="yt-card" data-yt-id="${v.id}" style="background:var(--card2);border-radius:16px;overflow:hidden;margin-bottom:16px;cursor:pointer;border:1px solid var(--border);transition:transform 0.2s ease">
+      <div style="position:relative;width:100%;height:190px;background:#000">
+        <img src="${v.thumbnail}" style="width:100%;height:100%;object-fit:cover" alt="${esc(v.title)}" loading="lazy">
+        <span style="position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,0.85);color:#fff;font-size:11px;font-weight:700;padding:3px 7px;border-radius:6px">${v.duration}</span>
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.25)">
+          <div style="width:46px;height:46px;border-radius:50%;background:#ff0000;color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 4px 12px rgba(255,0,0,0.5)">▶</div>
+        </div>
+      </div>
+      <div style="padding:12px">
+        <b style="color:#fff;font-size:14px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:6px">${esc(v.title)}</b>
+        <div style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px">
+          <span>📺 ${esc(v.channelTitle)}</span>
+          <span>·</span>
+          <span>👁️ ${v.viewCount} views</span>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderYouTubePaginationBar() {
+  if (!youtubeNextToken && !youtubePrevToken) return '';
+  return `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:15px 5px">
+      <button class="pill secondary" id="yt-prev-btn" ${youtubePrevToken ? '' : 'disabled'} style="opacity:${youtubePrevToken ? 1 : 0.4}">← Previous</button>
+      <span style="font-size:12px;color:var(--muted)">YouTube API v3</span>
+      <button class="pill primary" id="yt-next-btn" ${youtubeNextToken ? '' : 'disabled'} style="opacity:${youtubeNextToken ? 1 : 0.4}">Next →</button>
+    </div>
+  `;
+}
+
+function youtubeHubView() {
+  if (!youtubeVideos.length && !youtubeLoading && !youtubeError) {
+    fetchYouTubeVideos('trending');
+  }
+
+  return `<div class="youtube-hub" style="padding:0 15px 80px 15px">
+    <div style="padding:10px 0">
+      <input class="search" id="yt-search-input" value="${esc(youtubeQuery === 'trending' ? '' : youtubeQuery)}" placeholder="🔍 Search YouTube videos, channels, songs..." style="margin:0 0 10px 0">
+      <div class="cat-pills" style="padding:0 0 10px 0">
+        <button class="cat-pill ${youtubeCategory === 'trending' ? 'on' : ''}" data-yt-cat="trending">🔥 Trending</button>
+        <button class="cat-pill ${youtubeCategory === 'music' ? 'on' : ''}" data-yt-cat="music">🎵 Music</button>
+        <button class="cat-pill ${youtubeCategory === 'gaming' ? 'on' : ''}" data-yt-cat="gaming">🎮 Gaming</button>
+        <button class="cat-pill ${youtubeCategory === 'movies' ? 'on' : ''}" data-yt-cat="movies">🎬 Movies</button>
+        <button class="cat-pill ${youtubeCategory === 'tech' ? 'on' : ''}" data-yt-cat="tech">💻 Tech</button>
+        <button class="cat-pill ${youtubeCategory === 'news' ? 'on' : ''}" data-yt-cat="news">📰 News</button>
+      </div>
+    </div>
+    <div id="yt-videos-grid" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(280px, 1fr));gap:15px">
+      ${renderYouTubeVideosContent()}
+    </div>
+    <div id="yt-pagination-bar">
+      ${renderYouTubePaginationBar()}
+    </div>
+  </div>`;
+}
+
+function openYouTubeModalPlayer(videoId) {
+  const videoObj = youtubeVideos.find(v => v.id === videoId);
+  const title = videoObj ? videoObj.title : 'YouTube Video';
+  const channel = videoObj ? videoObj.channelTitle : '';
+
+  const html = `
+  <div class="sheet" id="ytplayersheet" style="z-index:200">
+    <div class="sheet-backdrop" data-close-ytsheet="1"></div>
+    <div class="comment-drawer" style="max-height:90vh;padding:12px;background:#0d0d12">
+      <div style="display:flex;align-items:center;justify-content:space-between;width:100%;margin-bottom:10px">
+        <b style="font-size:14px;color:#fff;display:flex;align-items:center;gap:6px">🔴 YouTube IFrame Player</b>
+        <button data-close-ytsheet="1" style="background:#ffffff20;color:#fff;border:0;border-radius:50%;width:30px;height:30px;font-size:16px;cursor:pointer">✕</button>
+      </div>
+      <div style="position:relative;width:100%;padding-top:56.25%;background:#000;border-radius:14px;overflow:hidden">
+        <iframe id="yt-iframe-element" src="https://www.youtube.com/embed/${videoId}?autoplay=1&enablejsapi=1&origin=${encodeURIComponent(location.origin)}&rel=0" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="position:absolute;top:0;left:0;width:100%;height:100%;border:0"></iframe>
+      </div>
+      <div style="width:100%;text-align:left;margin-top:12px">
+        <b style="color:#fff;font-size:15px;line-height:1.4;display:block">${esc(title)}</b>
+        <div style="font-size:13px;color:var(--muted);margin-top:4px">${esc(channel)}</div>
+      </div>
+    </div>
+  </div>`;
+
+  document.body.insertAdjacentHTML('beforeend', html);
+  const sheet = document.querySelector('#ytplayersheet');
+  sheet.querySelectorAll('[data-close-ytsheet]').forEach(el => {
+    el.onclick = () => sheet.remove();
+  });
+}
+
+function bindYouTubeVideoCards() {
+  document.querySelectorAll('[data-yt-id]').forEach(card => {
+    card.onclick = () => {
+      openYouTubeModalPlayer(card.dataset.ytId);
+    };
+  });
+}
+
+function bindYouTubePagination() {
+  const prevBtn = document.querySelector('#yt-prev-btn');
+  if (prevBtn) {
+    prevBtn.onclick = () => {
+      if (youtubePrevToken) fetchYouTubeVideos(youtubeQuery || 'trending', youtubePrevToken);
+    };
+  }
+  const nextBtn = document.querySelector('#yt-next-btn');
+  if (nextBtn) {
+    nextBtn.onclick = () => {
+      if (youtubeNextToken) fetchYouTubeVideos(youtubeQuery || 'trending', youtubeNextToken);
+    };
+  }
 }
 
 let reelsData = [];
@@ -536,7 +722,7 @@ function profileView(){
   return `<header class="ptop"><button class="icon" data-go="add" aria-label="Create post">${PICONS.plus}</button><div class="pusername">${esc(u.username)}${PICONS.chevron}${isMe?'<span class="reddot"></span>':''}</div><button class="icon" id="profile-menu" aria-label="Menu">${PICONS.menu}</button></header>
   <section class="profile">
     <div class="profiletop">
-      <div class="pavatar-wrap"><div class="pring">${avatar(u,'big')}</div>${isMe?'<span class="pavatar-badge">+</span>':''}</div>
+      <div class="pavatar-wrap" id="pavatar-click-wrap" style="cursor:pointer"><div class="pring">${avatar(u,'big')}</div>${isMe?'<span class="pavatar-badge">+</span>':''}</div>
       <div class="stats">
         <div><b>${allPosts.filter(p=>!p.isReel).length}</b><span class="muted">posts</span></div>
         <div data-open-userlist="followers" style="cursor:pointer"><b>${u.followers}</b><span class="muted">followers</span></div>
@@ -752,8 +938,80 @@ async function searchUsers(){
     });
   }catch(e){out.innerHTML='<div class="empty">Unable to search.</div>'}
 }
-async function toggleFollow(){try{let r=await api('/api/users/'+profile.username+'/follow',{method:'POST'});profile={...profile,...r.user,posts:profile.posts,highlights:profile.highlights};render()}catch(e){toast(e.message)}}
-async function editProfile(){let name=prompt('Display name',me.displayName);if(name===null)return;let bio=prompt('Bio',me.bio||'');if(bio===null)return;try{me=(await api('/api/me',{method:'PATCH',body:JSON.stringify({displayName:name,bio})})).user;profile=null;render();toast('Profile saved')}catch(e){toast(e.message)}}
+function openEditProfileModal(){
+  let tempAvatar = me.avatar || '';
+  const html = `<div class="sheet" id="editprofilesheet" style="z-index:150">
+    <div class="sheet-backdrop" data-close-editsheet="1"></div>
+    <div class="comment-drawer" style="align-items:center;text-align:center">
+      <div style="display:flex;align-items:center;justify-content:space-between;width:100%;margin-bottom:15px">
+        <b style="font-size:16px;color:#fff">Edit profile</b>
+        <button data-close-editsheet="1" style="background:none;border:0;color:var(--muted);font-size:18px;cursor:pointer">✕</button>
+      </div>
+
+      <div style="position:relative;margin-bottom:12px">
+        <div id="edit-avatar-preview-ring" class="pring" style="width:90px;height:90px;border-radius:50%;overflow:hidden;border:3px solid var(--pink);margin:0 auto">
+          ${tempAvatar ? `<img id="edit-avatar-img" src="${tempAvatar}" style="width:100%;height:100%;object-fit:cover">` : `<div style="width:100%;height:100%;background:linear-gradient(45deg,#f5a623,#e0407a);display:flex;align-items:center;justify-content:center;font-size:32px;color:#fff;font-weight:700">${esc((me.displayName||'U')[0].toUpperCase())}</div>`}
+        </div>
+        <label style="color:var(--pink);font-weight:700;font-size:13px;cursor:pointer;display:block;margin-top:8px">
+          📷 Change Profile Picture (DP)
+          <input type="file" id="dp-file-input" accept="image/*" style="display:none">
+        </label>
+      </div>
+
+      <div style="width:100%;text-align:left;margin-bottom:12px">
+        <label style="font-size:12px;color:var(--muted)">Display Name</label>
+        <input id="edit-name-inp" class="search" value="${esc(me.displayName||'')}" style="margin-top:4px;border-radius:10px">
+      </div>
+
+      <div style="width:100%;text-align:left;margin-bottom:18px">
+        <label style="font-size:12px;color:var(--muted)">Bio</label>
+        <textarea id="edit-bio-inp" class="search" style="margin-top:4px;border-radius:10px;height:70px;resize:none;line-height:1.4">${esc(me.bio||'')}</textarea>
+      </div>
+
+      <button class="primary" id="save-profile-btn" style="width:100%;padding:13px;border-radius:12px;font-size:15px;font-weight:700">Save changes</button>
+    </div>
+  </div>`;
+
+  document.body.insertAdjacentHTML('beforeend', html);
+  const sheet = document.querySelector('#editprofilesheet');
+  sheet.querySelector('[data-close-editsheet]').onclick = () => sheet.remove();
+
+  const dpInput = sheet.querySelector('#dp-file-input');
+  if(dpInput){
+    dpInput.onchange = e => {
+      let f = e.target.files[0];
+      if(!f) return;
+      if(f.size > 3.5*1024*1024) return toast('Photo 3.5 MB se chhoti choose karo');
+      let reader = new FileReader();
+      reader.onload = () => {
+        tempAvatar = reader.result;
+        const ring = sheet.querySelector('#edit-avatar-preview-ring');
+        ring.innerHTML = `<img src="${tempAvatar}" style="width:100%;height:100%;object-fit:cover">`;
+      };
+      reader.readAsDataURL(f);
+    };
+  }
+
+  sheet.querySelector('#save-profile-btn').onclick = async () => {
+    const nameVal = sheet.querySelector('#edit-name-inp').value.trim();
+    const bioVal = sheet.querySelector('#edit-bio-inp').value.trim();
+    try {
+      const res = await api('/api/me', {
+        method: 'PATCH',
+        body: JSON.stringify({ displayName: nameVal, bio: bioVal, avatar: tempAvatar })
+      });
+      me = res.user;
+      profile = null;
+      sheet.remove();
+      render();
+      toast('🎉 Profile picture updated successfully!');
+    } catch(err) {
+      toast(err.message || 'Failed to update profile');
+    }
+  };
+}
+
+async function editProfile(){ openEditProfileModal(); }
 async function openThread(){if(!profile)return;partner=profile;replyTarget=null;screen='thread';render()}
 
 function messageBubble(m){
@@ -1047,6 +1305,28 @@ function bind(){
     if(!input.value.trim())return;
     try{await api('/api/posts/'+f.dataset.comment+'/comments',{method:'POST',body:JSON.stringify({text:input.value})});await loadPosts();render()}catch(x){toast(x.message)}
   });
+  /* YouTube Search Input & Category Pills */
+  document.querySelectorAll('[data-yt-cat]').forEach(b => {
+    b.onclick = () => {
+      youtubeCategory = b.dataset.ytCat;
+      youtubeQuery = youtubeCategory;
+      fetchYouTubeVideos(youtubeQuery);
+    };
+  });
+
+  let ytInput = document.querySelector('#yt-search-input');
+  if (ytInput) {
+    ytInput.oninput = () => {
+      youtubeQuery = ytInput.value;
+      clearTimeout(youtubeSearchDebounce);
+      youtubeSearchDebounce = setTimeout(() => {
+        fetchYouTubeVideos(youtubeQuery || 'trending');
+      }, 450);
+    };
+  }
+
+  bindYouTubeVideoCards();
+  bindYouTubePagination();
 
   /* Double tap heart binding */
   document.querySelectorAll('[data-dbl-like]').forEach(wrap => {
@@ -1210,6 +1490,16 @@ function openQuickEmojiPicker(){
       openUserListModal(el.dataset.openUserlist, u.username);
     };
   });
+
+  let pavatarClick = document.querySelector('#pavatar-click-wrap');
+  if(pavatarClick){
+    pavatarClick.onclick = () => {
+      let u = profile || me;
+      if(u.username === me.username){
+        openEditProfileModal();
+      }
+    };
+  }
   
   let createBtn=document.querySelector('#create-btn');if(createBtn)createBtn.onclick=openCreateSheet;
   document.querySelectorAll('[data-view-highlight]').forEach(b=>b.onclick=()=>viewHighlight(b.dataset.viewHighlight));

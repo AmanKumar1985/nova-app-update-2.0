@@ -378,6 +378,32 @@ function bindYouTubePagination() {
   }
 }
 
+let ytShortsTab = 'all';
+let ytShortsFeed = [];
+let ytShortsLoading = false;
+let ytShortsNextToken = '';
+let likedShorts = new Set();
+let savedShorts = new Set();
+
+async function loadYouTubeShorts(token = '') {
+  ytShortsLoading = true;
+  try {
+    const res = await api('/api/youtube/shorts?pageToken=' + encodeURIComponent(token));
+    if (res.shorts) {
+      if (token) {
+        ytShortsFeed = [...ytShortsFeed, ...res.shorts];
+      } else {
+        ytShortsFeed = res.shorts;
+      }
+      ytShortsNextToken = res.nextPageToken || '';
+    }
+  } catch (err) {
+    console.error('Shorts error:', err);
+  }
+  ytShortsLoading = false;
+  render();
+}
+
 let reelsData = [];
 async function loadReelsScreenData(){
   try {
@@ -388,12 +414,27 @@ async function loadReelsScreenData(){
 }
 
 function reelsScreen(){
+  if (ytShortsTab === 'yt_shorts') {
+    return renderYouTubeShortsFeed();
+  }
+
   const reelList = reelsData.length ? reelsData : posts.filter(p=>p.isReel);
   if(!reelList.length){
-    return `<div class="reels-feed-wrap"><div class="empty" style="padding-top:120px;text-align:center">No reels available right now.<br><br>Be the first to post a Reel!</div>${nav()}</div>`;
+    return `<div class="reels-feed-wrap">
+      <div style="position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:90;display:flex;gap:8px;background:rgba(0,0,0,0.7);padding:4px 10px;border-radius:20px;backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.15)">
+        <button class="pill small ${ytShortsTab==='all'?'primary':'secondary'}" id="toggle-reels-all" style="padding:4px 12px;font-size:12px">🎬 All Reels</button>
+        <button class="pill small ${ytShortsTab==='yt_shorts'?'primary':'secondary'}" id="toggle-reels-yt" style="padding:4px 12px;font-size:12px">🔴 YouTube Shorts</button>
+      </div>
+      <div class="empty" style="padding-top:140px;text-align:center">No reels available right now.<br><br>Be the first to post a Reel!</div>
+      ${nav()}
+    </div>`;
   }
   
   return `<div class="reels-feed-wrap">
+    <div style="position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:90;display:flex;gap:8px;background:rgba(0,0,0,0.7);padding:4px 10px;border-radius:20px;backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.15)">
+      <button class="pill small ${ytShortsTab==='all'?'primary':'secondary'}" id="toggle-reels-all" style="padding:4px 12px;font-size:12px">🎬 All Reels</button>
+      <button class="pill small ${ytShortsTab==='yt_shorts'?'primary':'secondary'}" id="toggle-reels-yt" style="padding:4px 12px;font-size:12px">🔴 YouTube Shorts</button>
+    </div>
     <div class="reels-container" id="reels-container">
       ${reelList.map((r, idx) => {
         const isYt = r.platform === 'youtube';
@@ -460,6 +501,54 @@ function reelsScreen(){
             <div style="margin-top:10px">
               ${r.author.avatar ? `<img src="${r.author.avatar}" class="sound-disc">` : `<div class="sound-disc" style="background:var(--pink)"></div>`}
             </div>
+          </div>
+        </div>
+      `;
+      }).join('')}
+    </div>
+    ${nav()}
+  </div>`;
+}
+
+function renderYouTubeShortsFeed() {
+  if (!ytShortsFeed.length && !ytShortsLoading) {
+    loadYouTubeShorts();
+    return `<div class="reels-feed-wrap"><div class="empty" style="padding-top:140px;text-align:center">Loading YouTube Shorts... 🔴</div>${nav()}</div>`;
+  }
+
+  return `<div class="reels-feed-wrap">
+    <div style="position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:90;display:flex;gap:8px;background:rgba(0,0,0,0.7);padding:4px 10px;border-radius:20px;backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.15)">
+      <button class="pill small ${ytShortsTab==='all'?'primary':'secondary'}" id="toggle-reels-all" style="padding:4px 12px;font-size:12px">🎬 All Reels</button>
+      <button class="pill small ${ytShortsTab==='yt_shorts'?'primary':'secondary'}" id="toggle-reels-yt" style="padding:4px 12px;font-size:12px;background:${ytShortsTab==='yt_shorts'?'#ff0000':''}">🔴 YouTube Shorts</button>
+    </div>
+    <div class="reels-container" id="shorts-vertical-container" style="scroll-snap-type:y mandatory;overflow-y:auto;height:100vh">
+      ${ytShortsFeed.map((s, idx) => {
+        const isLiked = likedShorts.has(s.id);
+        const isSaved = savedShorts.has(s.id);
+
+        return `
+        <div class="reel-card" data-short-id="${s.id}" data-index="${idx}" style="scroll-snap-align:start;height:100vh;position:relative;background:#000">
+          <iframe class="reel-video" src="https://www.youtube.com/embed/${s.id}?autoplay=1&enablejsapi=1&loop=1&playlist=${s.id}&controls=1&playsinline=1&rel=0" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="width:100%;height:100%;border:0;object-fit:cover"></iframe>
+          <div class="reel-overlay" style="position:absolute;bottom:70px;left:12px;right:70px;z-index:20;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,0.8)">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+              <div class="avatar" style="width:36px;height:36px;border-radius:50%;background:#ff0000;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff">▶</div>
+              <b style="color:#fff;font-size:14px">${esc(s.channelTitle)}</b>
+            </div>
+            <div style="font-size:13px;line-height:1.4;margin-bottom:6px;max-width:280px;font-weight:600">${esc(s.title)}</div>
+            <div style="font-size:12px;opacity:0.85;display:flex;align-items:center;gap:6px">👁️ ${s.viewCount} views · 🔴 YouTube Shorts</div>
+          </div>
+          <div class="reel-side-actions" style="position:absolute;bottom:80px;right:12px;z-index:20;display:flex;flex-direction:column;gap:14px;align-items:center">
+            <button class="reel-action-btn ${isLiked?'liked':''}" data-toggle-short-like="${s.id}">
+              <span>${isLiked?'❤️':'🤍'}</span>
+              <span style="font-size:11px">${isLiked ? 'Liked' : (s.likeCount || 'Like')}</span>
+            </button>
+            <button class="reel-action-btn" data-share-short="${s.id}">
+              <span>🚀</span>
+              <span style="font-size:11px">Share</span>
+            </button>
+            <button class="reel-action-btn" data-toggle-short-save="${s.id}">
+              <span>${isSaved?'🔖':'📑'}</span>
+            </button>
           </div>
         </div>
       `;
@@ -1414,13 +1503,95 @@ function bind(){
   let s=document.querySelector('#search');if(s)s.oninput=()=>{query=s.value;searchUsers()};
   let img=document.querySelector('#image');if(img)img.onchange=readMedia;
   let share=document.querySelector('#share');if(share)share.onclick=sharePost;
-  let follow=document.querySelector('#follow');if(follow)follow.onclick=toggleFollow;
-  let msg=document.querySelector('#message-btn');if(msg)msg.onclick=openThread;
   let edit=document.querySelector('#edit-profile');if(edit)edit.onclick=editProfile;
   let sf=document.querySelector('#sendform');if(sf)sf.onsubmit=sendMessage;
   let callBtn=document.querySelector('#call-btn');if(callBtn)callBtn.onclick=()=>startCall(partner.username, false);
   let videoCallBtn=document.querySelector('#video-call-btn');if(videoCallBtn)videoCallBtn.onclick=()=>startCall(partner.username, true);
   let cancelReply=document.querySelector('#cancel-reply');if(cancelReply)cancelReply.onclick=()=>{replyTarget=null;render()};
+
+  /* Fix Follow & Message buttons on Profile Screen & Reels */
+  document.querySelectorAll('#follow, [data-follow-user]').forEach(btn => {
+    btn.onclick = async (e) => {
+      e.stopPropagation();
+      const targetUser = btn.dataset.followUser || (profile ? profile.username : '');
+      if(!targetUser) return;
+      try {
+        let r = await api('/api/users/' + encodeURIComponent(targetUser) + '/follow', { method: 'POST' });
+        if(profile && profile.username === targetUser){
+          profile = { ...profile, ...r.user };
+        }
+        await loadPosts();
+        render();
+        toast(r.user.isFollowing ? `Following @${targetUser}` : `Unfollowed @${targetUser}`);
+      } catch(err) { toast(err.message); }
+    };
+  });
+
+  let msgBtn = document.querySelector('#message-btn');
+  if(msgBtn){
+    msgBtn.onclick = async (e) => {
+      e.stopPropagation();
+      if(!profile) return;
+      try {
+        let r = await api('/api/messages/' + encodeURIComponent(profile.username));
+        partner = r.partner;
+        replyTarget = null;
+        screen = 'thread';
+        render();
+      } catch(err) { toast(err.message); }
+    };
+  }
+
+  let shareProfileBtn = document.querySelector('#share-profile');
+  if(shareProfileBtn){
+    shareProfileBtn.onclick = () => {
+      const link = location.origin + '/?user=' + (profile ? profile.username : (me ? me.username : ''));
+      if(navigator.clipboard){
+        navigator.clipboard.writeText(link);
+        toast('📋 Profile link copied to clipboard!');
+      } else {
+        toast('Profile: ' + link);
+      }
+    };
+  }
+
+  /* YouTube Shorts Feed Actions */
+  let toggleAllReels = document.querySelector('#toggle-reels-all');
+  if(toggleAllReels) toggleAllReels.onclick = () => { ytShortsTab = 'all'; render(); };
+  let toggleYtShorts = document.querySelector('#toggle-reels-yt');
+  if(toggleYtShorts) toggleYtShorts.onclick = () => { ytShortsTab = 'yt_shorts'; render(); };
+
+  document.querySelectorAll('[data-toggle-short-like]').forEach(btn => {
+    btn.onclick = () => {
+      const id = btn.dataset.toggleShortLike;
+      if (likedShorts.has(id)) likedShorts.delete(id);
+      else likedShorts.add(id);
+      render();
+    };
+  });
+
+  document.querySelectorAll('[data-toggle-short-save]').forEach(btn => {
+    btn.onclick = () => {
+      const id = btn.dataset.toggleShortSave;
+      if (savedShorts.has(id)) savedShorts.delete(id);
+      else savedShorts.add(id);
+      toast(savedShorts.has(id) ? 'Short saved!' : 'Short removed from saved');
+      render();
+    };
+  });
+
+  document.querySelectorAll('[data-share-short]').forEach(btn => {
+    btn.onclick = () => {
+      const id = btn.dataset.shareShort;
+      const link = `https://www.youtube.com/shorts/${id}`;
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(link);
+        toast('🔗 YouTube Short link copied!');
+      } else {
+        toast('Short: ' + link);
+      }
+    };
+  });
 
 function openQuickEmojiPicker(){
   const existing = document.querySelector('#emojipickerpopover');

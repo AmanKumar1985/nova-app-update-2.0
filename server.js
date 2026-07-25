@@ -316,6 +316,78 @@ app.get('/api/youtube/search', auth, async (req, res) => {
     res.status(500).json({ error: 'Failed to search YouTube videos', videos: [] });
   }
 });
+
+// Backend Route: YouTube Data API v3 Vertical Shorts Feed
+app.get('/api/youtube/shorts', auth, async (req, res) => {
+  const pageToken = clean(req.query.pageToken || '');
+  const apiKey = process.env.YOUTUBE_API_KEY || '';
+
+  if (!apiKey) {
+    return res.status(503).json({
+      error: 'YOUTUBE_API_KEY is missing in .env file',
+      shorts: [],
+      nextPageToken: ''
+    });
+  }
+
+  try {
+    const query = clean(req.query.q || 'shorts viral trending');
+    const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoDuration=short&maxResults=10&q=${encodeURIComponent(query)}&pageToken=${encodeURIComponent(pageToken)}&key=${apiKey}`;
+    const searchRes = await fetch(searchUrl);
+
+    if (!searchRes.ok) {
+      const errData = await searchRes.json().catch(() => ({}));
+      return res.status(searchRes.status).json({ error: errData.error ? errData.error.message : 'YouTube Shorts API failed', shorts: [] });
+    }
+
+    const searchData = await searchRes.json();
+    const items = searchData.items || [];
+    const videoIds = items.map(i => i.id.videoId).filter(Boolean);
+
+    if (!videoIds.length) {
+      return res.json({ shorts: [], nextPageToken: '' });
+    }
+
+    const detailsUrl = `https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails,statistics&id=${videoIds.join(',')}&key=${apiKey}`;
+    const detailsRes = await fetch(detailsUrl);
+    let detailsMap = {};
+
+    if (detailsRes.ok) {
+      const detailsData = await detailsRes.json();
+      (detailsData.items || []).forEach(item => {
+        detailsMap[item.id] = item;
+      });
+    }
+
+    const shorts = items.map(item => {
+      const vId = item.id.videoId;
+      const detail = detailsMap[vId] || {};
+      const snippet = detail.snippet || item.snippet || {};
+      const contentDetails = detail.contentDetails || {};
+      const statistics = detail.statistics || {};
+
+      return {
+        id: vId,
+        title: snippet.title || 'YouTube Short',
+        description: snippet.description || '',
+        thumbnail: (snippet.thumbnails && snippet.thumbnails.high) ? snippet.thumbnails.high.url : `https://img.youtube.com/vi/${vId}/hqdefault.jpg`,
+        channelTitle: snippet.channelTitle || 'YouTube Creator',
+        publishedAt: snippet.publishedAt || new Date().toISOString(),
+        duration: formatIsoDuration(contentDetails.duration),
+        viewCount: statistics.viewCount ? Number(statistics.viewCount).toLocaleString() : '0',
+        likeCount: statistics.likeCount ? Number(statistics.likeCount).toLocaleString() : '0'
+      };
+    });
+
+    res.json({
+      shorts,
+      nextPageToken: searchData.nextPageToken || ''
+    });
+  } catch (err) {
+    console.error('YouTube Shorts API Error:', err.message);
+    res.status(500).json({ error: 'Failed to fetch YouTube Shorts', shorts: [] });
+  }
+});
 app.get('/api/notifications', auth, (req,res) => { const rows=db.prepare('SELECT n.*,u.username,u.display_name,u.avatar FROM notifications n JOIN users u ON u.id=n.actor_id WHERE n.recipient_id=? ORDER BY n.created_at DESC LIMIT 50').all(req.user.id); res.json({notifications:rows.map(row=>({id:row.id,type:row.type,postId:row.post_id,createdAt:row.created_at,read:!!row.read_at,actor:{username:row.username,displayName:row.display_name,avatar:row.avatar}}))}); });
 app.post('/api/notifications/read', auth, (req,res) => { db.prepare('UPDATE notifications SET read_at=? WHERE recipient_id=? AND read_at IS NULL').run(now(),req.user.id); res.json({ok:true}); });
 app.get('/api/stories', auth, (req,res) => { const mine = req.query.mine==='1'; const rows= mine ? db.prepare('SELECT s.*,u.username,u.display_name,u.avatar FROM stories s JOIN users u ON u.id=s.author_id WHERE s.created_at>? AND s.author_id=? ORDER BY s.created_at DESC').all(now()-24*3600000, req.user.id) : db.prepare('SELECT s.*,u.username,u.display_name,u.avatar FROM stories s JOIN users u ON u.id=s.author_id WHERE s.created_at>? ORDER BY s.created_at DESC').all(now()-24*3600000); res.json({stories:rows.map(row=>({id:row.id,image:row.image,createdAt:row.created_at,author:{username:row.username,displayName:row.display_name,avatar:row.avatar}}))}); });

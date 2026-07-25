@@ -178,7 +178,19 @@ app.patch('/api/me', auth, (req, res) => { const displayName=clean(req.body.disp
 
 app.get('/api/users', auth, (req,res) => { const q=clean(req.query.q).toLowerCase(); const rows=q ? db.prepare("SELECT * FROM users WHERE id != ? AND (username LIKE ? OR lower(display_name) LIKE ?) LIMIT 30").all(req.user.id,`%${q}%`,`%${q}%`) : []; res.json({users:rows.map(row=>publicUser(row,req.user.id))}); });
 app.get('/api/users/:username', auth, (req,res) => { const user=db.prepare('SELECT * FROM users WHERE username=?').get(req.params.username.toLowerCase()); if(!user)return res.status(404).json({error:'User not found.'}); const posts=db.prepare('SELECT id,image,is_reel,filter,caption,created_at FROM posts WHERE author_id=? ORDER BY created_at DESC').all(user.id).map(p=>({id:p.id,image:p.image,isReel:!!p.is_reel,filter:p.filter||'normal',caption:p.caption,createdAt:p.created_at})); const highlights=db.prepare('SELECT id,title,cover,created_at FROM highlights WHERE owner_id=? ORDER BY created_at ASC').all(user.id); res.json({user:publicUser(user,req.user.id),posts,highlights}); });
-app.post('/api/users/:username/follow', auth, (req,res) => { const target=db.prepare('SELECT * FROM users WHERE username=?').get(req.params.username.toLowerCase()); if(!target || target.id===req.user.id)return res.status(400).json({error:'Cannot follow this user.'}); if(target.is_instagram) return res.status(400).json({error:'Instagram profiles cannot be followed.'}); const existing=db.prepare('SELECT 1 FROM follows WHERE follower_id=? AND following_id=?').get(req.user.id,target.id); if(existing) db.prepare('DELETE FROM follows WHERE follower_id=? AND following_id=?').run(req.user.id,target.id); else { db.prepare('INSERT INTO follows (follower_id,following_id) VALUES (?,?)').run(req.user.id,target.id); notify(target.id,req.user.id,'follow'); } res.json({user:publicUser(target,req.user.id)}); });
+app.get('/api/users/:username/followers', auth, (req,res) => {
+  const user = db.prepare('SELECT * FROM users WHERE lower(username)=?').get(req.params.username.toLowerCase());
+  if(!user) return res.status(404).json({error:'User not found.'});
+  const rows = db.prepare('SELECT u.* FROM follows f JOIN users u ON u.id=f.follower_id WHERE f.following_id=?').all(user.id);
+  res.json({ users: rows.map(u => publicUser(u, req.user.id)) });
+});
+
+app.get('/api/users/:username/following', auth, (req,res) => {
+  const user = db.prepare('SELECT * FROM users WHERE lower(username)=?').get(req.params.username.toLowerCase());
+  if(!user) return res.status(404).json({error:'User not found.'});
+  const rows = db.prepare('SELECT u.* FROM follows f JOIN users u ON u.id=f.following_id WHERE f.follower_id=?').all(user.id);
+  res.json({ users: rows.map(u => publicUser(u, req.user.id)) });
+});
 
 function postDto(post, viewerId) { const author=db.prepare('SELECT * FROM users WHERE id=?').get(post.author_id); return {id:post.id,image:post.image,isReel:!!post.is_reel,isInstagram:!!post.is_instagram,platform:post.platform||(post.is_instagram?'instagram':'nova'),externalUrl:post.external_url||'',filter:post.filter||'normal',caption:post.caption,createdAt:post.created_at,author:publicUser(author,viewerId),likes:db.prepare('SELECT COUNT(*) count FROM likes WHERE post_id=?').get(post.id).count,liked:!!db.prepare('SELECT 1 FROM likes WHERE post_id=? AND user_id=?').get(post.id,viewerId),saved:!!db.prepare('SELECT 1 FROM saved_posts WHERE post_id=? AND user_id=?').get(post.id,viewerId),comments:db.prepare('SELECT c.id,c.text,c.created_at,u.username,u.display_name FROM comments c JOIN users u ON u.id=c.user_id WHERE c.post_id=? ORDER BY c.created_at DESC LIMIT 3').all(post.id).reverse().map(c=>({id:c.id,text:c.text,createdAt:c.created_at,user:{username:c.username,displayName:c.display_name}}))}; }
 app.get('/api/posts', auth, (req,res) => { const posts=db.prepare('SELECT * FROM posts ORDER BY created_at DESC LIMIT 100').all(); res.json({posts:posts.map(p=>postDto(p,req.user.id))}); });
@@ -261,21 +273,23 @@ app.post('/api/comments/:id/like', auth, (req,res) => {
 app.post('/api/posts/:id/comments', auth, (req,res) => { const text=clean(req.body.text); const post=db.prepare('SELECT * FROM posts WHERE id=?').get(req.params.id); if(!post)return res.status(404).json({error:'Post not found.'});if(!text||text.length>500)return res.status(400).json({error:'Comment must be 1–500 characters.'});db.prepare('INSERT INTO comments (id,post_id,user_id,text,created_at) VALUES (?,?,?,?,?)').run(id(),post.id,req.user.id,text,now());res.json({post:postDto(post,req.user.id)}); });
 
 app.get('/api/messages/:username', auth, (req,res) => {
-  const partner=db.prepare('SELECT * FROM users WHERE username=?').get(req.params.username.toLowerCase());
+  const targetStr = clean(req.params.username).toLowerCase();
+  const partner=db.prepare('SELECT * FROM users WHERE lower(username)=? OR lower(display_name)=? OR id=?').get(targetStr, targetStr, targetStr);
   if(!partner) return res.status(404).json({error:'User not found.'});
   const unreadIds = db.prepare('SELECT id FROM messages WHERE recipient_id=? AND sender_id=? AND read_at IS NULL').all(req.user.id, partner.id);
   if (unreadIds.length) {
     db.prepare('UPDATE messages SET read_at=? WHERE recipient_id=? AND sender_id=? AND read_at IS NULL').run(now(), req.user.id, partner.id);
     wsSend(partner.id, { type:'read', from: req.user.username, at: now() });
   }
-  const messages=db.prepare('SELECT * FROM messages WHERE (sender_id=? AND recipient_id=?) OR (sender_id=? AND recipient_id=?) ORDER BY created_at ASC').all(req.user.id,partner.id,partner.id,req.user.id);
+  const messages=db.prepare('SELECT * FROM messages WHERE ((sender_id=? AND recipient_id=?) OR (sender_id=? AND recipient_id=?)) AND (deleted IS NULL OR deleted=0) ORDER BY created_at ASC').all(req.user.id,partner.id,partner.id,req.user.id);
   res.json({partner:publicUser(partner,req.user.id), messages: messages.map(m => messageDto(m, req.user.id))});
 });
 app.get('/api/messages', auth, (req,res) => {
   const rows = db.prepare(`SELECT m.* FROM messages m
     INNER JOIN (SELECT CASE WHEN sender_id=? THEN recipient_id ELSE sender_id END AS partner_id, MAX(created_at) AS latest
-      FROM messages WHERE sender_id=? OR recipient_id=? GROUP BY partner_id) latest
+      FROM messages WHERE (sender_id=? OR recipient_id=?) AND (deleted IS NULL OR deleted=0) GROUP BY partner_id) latest
     ON m.created_at=latest.latest AND (m.sender_id=latest.partner_id OR m.recipient_id=latest.partner_id)
+    WHERE (m.deleted IS NULL OR m.deleted=0)
     ORDER BY m.created_at DESC`).all(req.user.id, req.user.id, req.user.id);
   const seen = new Set();
   const conversations = rows.map(m => {
@@ -283,20 +297,23 @@ app.get('/api/messages', auth, (req,res) => {
     if (seen.has(partnerId)) return null;
     seen.add(partnerId);
     let fObj = null; if (m.file) { try { fObj = JSON.parse(m.file); } catch(e){} }
-    const textPreview = m.deleted ? 'Message unsent' : (fObj ? (fObj.isAudio ? '🎵 ' + fObj.name : '📁 ' + fObj.name) : (m.audio ? '🎙️ Voice note' : (m.image ? '📷 Photo' : m.text)));
+    const textPreview = fObj ? (fObj.isAudio ? '🎵 ' + fObj.name : '📁 ' + fObj.name) : (m.audio ? '🎙️ Voice note' : (m.image ? '📷 Photo' : m.text));
     return { partner: publicUser(db.prepare('SELECT * FROM users WHERE id=?').get(partnerId), req.user.id), text: textPreview, createdAt: m.created_at };
   }).filter(Boolean);
   res.json({ conversations });
 });
 app.post('/api/messages/:username', auth, rateLimit(120, 60000), (req,res) => {
-  const partner=db.prepare('SELECT * FROM users WHERE username=?').get(req.params.username.toLowerCase());
+  const targetStr = clean(req.params.username).toLowerCase();
+  const partner=db.prepare('SELECT * FROM users WHERE lower(username)=? OR lower(display_name)=? OR id=?').get(targetStr, targetStr, targetStr);
   const text=clean(req.body.text);
   const img=req.body.image ? String(req.body.image) : null;
   const audio=req.body.audio ? String(req.body.audio) : null;
   const fileData=req.body.file ? JSON.stringify(req.body.file) : null;
   const replyTo = req.body.replyTo ? String(req.body.replyTo) : null;
   const forwarded = req.body.forwarded ? 1 : 0;
-  if(!partner||(!text && !img && !audio && !fileData)||(text && text.length>1000)) return res.status(400).json({error:'Unable to send message.'});
+  if(!partner) return res.status(404).json({error:'User not found.'});
+  if(!text && !img && !audio && !fileData) return res.status(400).json({error:'Message cannot be empty.'});
+  if(text && text.length>1000) return res.status(400).json({error:'Message too long.'});
   if (img && !validImage(img)) return res.status(400).json({error:'Invalid image attachment.'});
   if (replyTo && !db.prepare('SELECT 1 FROM messages WHERE id=? AND ((sender_id=? AND recipient_id=?) OR (sender_id=? AND recipient_id=?))').get(replyTo, req.user.id, partner.id, partner.id, req.user.id)) return res.status(400).json({error:'Invalid reply.'});
   const msgId = id();
@@ -309,7 +326,7 @@ app.post('/api/messages/:username', auth, rateLimit(120, 60000), (req,res) => {
 app.delete('/api/messages/:id', auth, (req,res) => {
   const m = db.prepare('SELECT * FROM messages WHERE id=?').get(req.params.id);
   if (!m || m.sender_id !== req.user.id) return res.status(404).json({error:'Message not found.'});
-  db.prepare('UPDATE messages SET deleted=1 WHERE id=?').run(m.id);
+  db.prepare('DELETE FROM messages WHERE id=?').run(m.id);
   wsSend(m.recipient_id, { type:'unsend', id:m.id });
   wsSend(m.sender_id, { type:'unsend', id:m.id, self:true });
   res.json({ ok:true });

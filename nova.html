@@ -211,9 +211,20 @@ function reelsScreen(){
     <div class="reels-container" id="reels-container">
       ${reelList.map((r, idx) => {
         const isYt = r.platform === 'youtube';
+        let ytId = '3Z78y1k3W5Y';
+        if (r.image && !r.image.startsWith('http')) {
+          ytId = r.image;
+        } else if (r.externalUrl && r.externalUrl.includes('shorts/')) {
+          ytId = r.externalUrl.split('shorts/')[1].split('?')[0];
+        }
+        
+        const mediaPlayer = isYt 
+          ? `<iframe class="reel-video" src="https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&controls=1&loop=1&playlist=${ytId}&playsinline=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="width:100%;height:100%;border:0;object-fit:cover"></iframe>`
+          : `<video class="reel-video" src="${r.image && r.image.startsWith('http')?r.image:'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4'}" loop playsinline muted autoplay preload="auto" referrerpolicy="no-referrer" crossorigin="anonymous" style="width:100%;height:100%;object-fit:cover"></video>`;
+
         const platformBadge = isYt 
-          ? `<button class="pill small" data-open-external="${r.externalUrl || 'https://www.youtube.com'}" style="background:#ff0000;color:#fff;font-weight:700;padding:4px 10px;font-size:11px;border-radius:14px;border:0;cursor:pointer;display:flex;align-items:center;gap:4px">🔴 YouTube Shorts ↗</button>`
-          : `<button class="pill small" data-open-external="${r.externalUrl || 'https://www.instagram.com'}" style="background:linear-gradient(45deg,#833ab4,#fd1d1d,#fcb045);color:#fff;font-weight:700;padding:4px 10px;font-size:11px;border-radius:14px;border:0;cursor:pointer;display:flex;align-items:center;gap:4px">📸 Instagram Reel ↗</button>`;
+          ? `<button class="pill small" data-open-external="${r.externalUrl || 'https://www.youtube.com/shorts/' + ytId}" style="background:#ff0000;color:#fff;font-weight:700;padding:4px 10px;font-size:11px;border-radius:14px;border:0;cursor:pointer;display:flex;align-items:center;gap:4px">🔴 Open YouTube Shorts ↗</button>`
+          : `<button class="pill small" data-open-external="${r.externalUrl || 'https://www.instagram.com/reels/'}" style="background:linear-gradient(45deg,#833ab4,#fd1d1d,#fcb045);color:#fff;font-weight:700;padding:4px 10px;font-size:11px;border-radius:14px;border:0;cursor:pointer;display:flex;align-items:center;gap:4px">📸 Open Instagram Reel ↗</button>`;
         
         const followBtn = (r.author.isInstagram || isYt)
           ? platformBadge
@@ -231,7 +242,7 @@ function reelsScreen(){
 
         return `
         <div class="reel-card" data-reel-id="${r.id}" data-index="${idx}">
-          <video class="reel-video" src="${r.image}" loop playsinline muted autoplay preload="auto" referrerpolicy="no-referrer" crossorigin="anonymous"></video>
+          ${mediaPlayer}
           <div class="reel-media-wrap" data-dbl-like="${r.id}">
             <div class="heart-burst">❤️</div>
           </div>
@@ -244,7 +255,7 @@ function reelsScreen(){
             <div style="font-size:13px;line-height:1.4;margin-bottom:6px;max-width:280px">${esc(r.caption||'')}</div>
             <div style="font-size:12px;opacity:0.85;display:flex;align-items:center;gap:6px;margin-bottom:6px">🎵 <span>Original Audio - ${esc(r.author.displayName)}</span></div>
             <div style="font-size:11px;color:#fff;background:rgba(0,0,0,0.6);padding:3px 8px;border-radius:8px;display:inline-block">
-              ${isYt ? '🔴 YouTube Video Reel' : '📸 Instagram Video Reel'} — Tap badge to open in ${isYt?'YouTube':'Instagram'}
+              ${isYt ? '🔴 YouTube Video Shorts' : '📸 Instagram Video Reel'} — Tap badge to open in ${isYt?'YouTube':'Instagram'}
             </div>
           </div>
           <div class="reel-side-actions">
@@ -528,8 +539,8 @@ function profileView(){
       <div class="pavatar-wrap"><div class="pring">${avatar(u,'big')}</div>${isMe?'<span class="pavatar-badge">+</span>':''}</div>
       <div class="stats">
         <div><b>${allPosts.filter(p=>!p.isReel).length}</b><span class="muted">posts</span></div>
-        <div><b>${u.followers}</b><span class="muted">followers</span></div>
-        <div><b>${u.following}</b><span class="muted">following</span></div>
+        <div data-open-userlist="followers" style="cursor:pointer"><b>${u.followers}</b><span class="muted">followers</span></div>
+        <div data-open-userlist="following" style="cursor:pointer"><b>${u.following}</b><span class="muted">following</span></div>
       </div>
     </div>
     <h3>${esc(u.displayName)}</h3>
@@ -556,21 +567,32 @@ function thread(){
   const dmImgPreview = dmImage ? `<div style="position:relative;padding:5px 12px"><img src="${dmImage}" style="max-height:80px;border-radius:8px"><button id="clear-dm-img" style="position:absolute;top:0;background:#000;color:#fff;border:0;border-radius:50%;width:20px;height:20px">✕</button></div>` : '';
   return `<div class="threadwrap">
     <div class="threadhead">
-      <button class="icon" data-go="messages">‹</button>
+      <button class="icon" data-go="messages" aria-label="Back">‹</button>
       ${avatar(partner)}
       <div class="grow"><b>${esc(partner.displayName)}</b><div class="small muted" id="typing-indicator"></div></div>
-      <button class="icon" id="call-btn" title="Audio call">📞</button>
-      <button class="icon" id="video-call-btn" title="Video call">📹</button>
+      <button class="icon" id="video-call-btn" title="Video call" style="padding:6px">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="14" height="14" rx="3"/><path d="M16 10l5-3v10l-5-3"/></svg>
+      </button>
+      <button class="icon" id="call-btn" title="Audio call" style="padding:6px">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+      </button>
+      <button class="icon" id="dm-more-menu-btn" title="Options" style="padding:6px">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
+      </button>
     </div>
     <div class="messages" id="messages"></div>
-    ${replyTarget?`<div class="replybar"><div class="grow"><div class="small muted">Replying to</div><div class="small">${esc(replyTarget.deleted?'Message unsent':(replyTarget.text||''))}</div></div><button class="icon" id="cancel-reply">✕</button></div>`:''}
+    ${replyTarget?`<div class="replybar"><div class="grow"><div class="small muted">Replying to</div><div class="small">${esc(replyTarget.text||'')}</div></div><button class="icon" id="cancel-reply">✕</button></div>`:''}
     ${dmImgPreview}
-    <form class="send" id="sendform">
-      <label class="icon" style="cursor:pointer" title="Send Photo">📷<input id="dm-file" type="file" accept="image/*" style="display:none"></label>
-      <label class="icon" style="cursor:pointer" title="Send Song or File">📎<input id="doc-file" type="file" style="display:none"></label>
-      <button type="button" class="icon" id="mic-btn" title="Record Voice Note">🎙️</button>
-      <input id="message" placeholder="Write a message..." autocomplete="off">
-      <button id="sendbtn">➤</button>
+    <form class="send" id="sendform" style="display:flex;align-items:center;gap:8px;padding:6px 10px">
+      <div style="display:flex;align-items:center;gap:6px;background:var(--card2);border-radius:24px;padding:4px 12px;flex:1">
+        <button type="button" class="icon" id="emoji-picker-btn" title="Emojis" style="font-size:18px;background:none;border:0;cursor:pointer;padding:0">😀</button>
+        <input id="message" placeholder="Message" autocomplete="off" style="border:0;background:none;color:#fff;outline:none;font-size:15px;flex:1;padding:6px 0">
+        <label class="icon" style="cursor:pointer;font-size:18px" title="Send Song or File">📎<input id="doc-file" type="file" style="display:none"></label>
+        <label class="icon" style="cursor:pointer;font-size:18px" title="Send Photo">📷<input id="dm-file" type="file" accept="image/*" style="display:none"></label>
+      </div>
+      <button id="sendbtn" type="submit" style="background:#25d366;color:#fff;border:0;border-radius:50%;width:44px;height:44px;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;flex-shrink:0;box-shadow:0 2px 8px rgba(37,211,102,0.4)">
+        <span id="send-icon-txt">🎙️</span>
+      </button>
     </form>
     <div id="recording-bar" class="send hidden" style="background:var(--card2)">
       <span class="reddot" style="animation:splashGlow 1s infinite;width:10px;height:10px"></span>
@@ -588,7 +610,148 @@ function readMedia(e){let f=e.target.files[0];if(!f)return;const isVideo=addMode
 async function sharePost(){try{if(addMode==='story'){await api('/api/stories',{method:'POST',body:JSON.stringify({image:uploadImage})});toast('Story shared!')}else{await api('/api/posts',{method:'POST',body:JSON.stringify({image:uploadImage,caption:document.querySelector('#caption').value,isReel:addMode==='reel',filter:selectedFilter})});toast(addMode==='reel'?'Reel shared!':'Post shared!')}uploadImage=null;uploadIsVideo=false;addMode='post';selectedFilter='normal';await loadPosts();screen='home';render()}catch(e){toast(e.message)}}
 async function like(id){try{await api('/api/posts/'+id+'/like',{method:'POST'});await loadPosts();render()}catch(e){toast(e.message)}}
 
-async function searchUsers(){let out=document.querySelector('#results');if(!out)return;if(!query.trim()){out.innerHTML='';return}try{let r=await api('/api/users?q='+encodeURIComponent(query));out.innerHTML=r.users.length?r.users.map(u=>`<div class="user">${avatar(u)}<div class="grow" data-profile="${u.username}"><b>${esc(u.displayName)}</b><div class="muted">@${esc(u.username)}</div></div><button class="pill" data-open="${u.username}">View</button></div>`).join(''):'<div class="empty">No users found.</div>';out.querySelectorAll('[data-profile]').forEach(e=>e.onclick=()=>openProfile(e.dataset.profile));out.querySelectorAll('[data-open]').forEach(e=>e.onclick=()=>openProfile(e.dataset.open))}catch(e){out.innerHTML='<div class="empty">Unable to search.</div>'}}
+async function openUserListModal(type, username){
+  const title = type === 'followers' ? 'Followers' : 'Following';
+  const html = `<div class="sheet" id="userlistsheet" style="z-index:150">
+    <div class="sheet-backdrop" data-close-userlistsheet="1"></div>
+    <div class="comment-drawer" style="max-height:80vh">
+      <div style="display:flex;align-items:center;justify-content:space-between;width:100%;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border)">
+        <b style="font-size:16px;color:#fff">${title}</b>
+        <button data-close-userlistsheet="1" style="background:none;border:0;color:var(--muted);font-size:18px;cursor:pointer">✕</button>
+      </div>
+      <div id="userlist-body" style="width:100%;max-height:60vh;overflow-y:auto">
+        <div style="text-align:center;padding:20px;color:var(--muted)">Loading ${type}...</div>
+      </div>
+    </div>
+  </div>`;
+
+  document.body.insertAdjacentHTML('beforeend', html);
+  const sheet = document.querySelector('#userlistsheet');
+  sheet.querySelectorAll('[data-close-userlistsheet]').forEach(el => el.onclick = () => sheet.remove());
+
+  try {
+    const res = await api(`/api/users/${encodeURIComponent(username)}/${type}`);
+    const users = res.users || [];
+    const body = sheet.querySelector('#userlist-body');
+    if (!users.length) {
+      body.innerHTML = `<div class="empty" style="padding:30px">No ${type} found.</div>`;
+      return;
+    }
+    body.innerHTML = users.map(u => `
+      <div class="user" style="display:flex;align-items:center;gap:12px;padding:8px 0">
+        ${avatar(u)}
+        <div class="grow" style="cursor:pointer" data-view-profile="${u.username}">
+          <b style="color:#fff;font-size:14px">${esc(u.displayName)}</b>
+          <div class="muted small">@${esc(u.username)}</div>
+        </div>
+        ${u.username !== me.username ? `<button class="pill small ${u.isFollowing?'secondary':'primary'}" data-toggle-follow="${u.username}">${u.isFollowing?'Following':'Follow'}</button>` : ''}
+      </div>
+    `).join('');
+
+    body.querySelectorAll('[data-view-profile]').forEach(b => {
+      b.onclick = () => {
+        sheet.remove();
+        openProfile(b.dataset.viewProfile);
+      };
+    });
+
+    body.querySelectorAll('[data-toggle-follow]').forEach(b => {
+      b.onclick = async () => {
+        try {
+          const uName = b.dataset.toggleFollow;
+          await api(`/api/users/${encodeURIComponent(uName)}/follow`, {method:'POST'});
+          b.innerText = b.innerText === 'Follow' ? 'Following' : 'Follow';
+          b.classList.toggle('primary');
+          b.classList.toggle('secondary');
+        } catch(e) { toast(e.message); }
+      };
+    });
+  } catch(e) {
+    sheet.querySelector('#userlist-body').innerHTML = `<div class="empty">Unable to load ${type}.</div>`;
+  }
+}
+
+function getSearchHistory(){
+  try { return JSON.parse(localStorage.getItem('nova_search_history') || '[]'); } catch(e) { return []; }
+}
+function saveSearchHistory(userObj){
+  if (!userObj || !userObj.username) return;
+  let history = getSearchHistory();
+  history = history.filter(u => u.username !== userObj.username);
+  history.unshift({ username: userObj.username, displayName: userObj.displayName, avatar: userObj.avatar });
+  if (history.length > 20) history = history.slice(0, 20);
+  localStorage.setItem('nova_search_history', JSON.stringify(history));
+}
+function removeSearchHistoryItem(username){
+  let history = getSearchHistory().filter(u => u.username !== username);
+  localStorage.setItem('nova_search_history', JSON.stringify(history));
+  searchUsers();
+}
+function clearSearchHistory(){
+  localStorage.removeItem('nova_search_history');
+  searchUsers();
+}
+
+async function searchUsers(){
+  let out=document.querySelector('#results');
+  if(!out) return;
+  
+  if(!query.trim()){
+    let history = getSearchHistory();
+    if(!history.length){
+      out.innerHTML = `<div class="empty" style="padding:20px;font-size:13px">Search for users by name or @username</div>`;
+      return;
+    }
+    out.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 15px 5px 15px">
+        <b style="font-size:14px;color:#fff">Recent Searches</b>
+        <button id="clear-all-history" style="background:none;border:0;color:var(--pink);font-size:12px;font-weight:700;cursor:pointer">Clear all</button>
+      </div>
+      <div class="search-history-list">
+        ${history.map(u => `
+          <div class="user" style="display:flex;align-items:center;justify-content:space-between">
+            <div style="display:flex;align-items:center;gap:10px;cursor:pointer;flex:1" data-profile="${u.username}">
+              ${avatar(u)}
+              <div>
+                <b style="font-size:14px;color:#fff">${esc(u.displayName)}</b>
+                <div class="muted small">@${esc(u.username)}</div>
+              </div>
+            </div>
+            <button data-del-history="${u.username}" style="background:none;border:0;color:var(--muted);font-size:16px;cursor:pointer;padding:6px">✕</button>
+          </div>
+        `).join('')}
+      </div>
+    `;
+    out.querySelectorAll('[data-profile]').forEach(e=>e.onclick=()=>openProfile(e.dataset.profile));
+    out.querySelectorAll('[data-del-history]').forEach(e=>e.onclick=(ev)=>{ ev.stopPropagation(); removeSearchHistoryItem(e.dataset.delHistory); });
+    let clearBtn = out.querySelector('#clear-all-history');
+    if(clearBtn) clearBtn.onclick = clearSearchHistory;
+    return;
+  }
+
+  try{
+    let r=await api('/api/users?q='+encodeURIComponent(query));
+    out.innerHTML=r.users.length?r.users.map(u=>`
+      <div class="user">
+        ${avatar(u)}
+        <div class="grow" data-profile="${u.username}">
+          <b>${esc(u.displayName)}</b>
+          <div class="muted">@${esc(u.username)}</div>
+        </div>
+        <button class="pill" data-open="${u.username}">View</button>
+      </div>
+    `).join(''):'<div class="empty">No users found.</div>';
+
+    out.querySelectorAll('[data-profile]').forEach(e=>e.onclick=()=>{
+      saveSearchHistory(r.users.find(u=>u.username===e.dataset.profile));
+      openProfile(e.dataset.profile);
+    });
+    out.querySelectorAll('[data-open]').forEach(e=>e.onclick=()=>{
+      saveSearchHistory(r.users.find(u=>u.username===e.dataset.open));
+      openProfile(e.dataset.open);
+    });
+  }catch(e){out.innerHTML='<div class="empty">Unable to search.</div>'}
+}
 async function toggleFollow(){try{let r=await api('/api/users/'+profile.username+'/follow',{method:'POST'});profile={...profile,...r.user,posts:profile.posts,highlights:profile.highlights};render()}catch(e){toast(e.message)}}
 async function editProfile(){let name=prompt('Display name',me.displayName);if(name===null)return;let bio=prompt('Bio',me.bio||'');if(bio===null)return;try{me=(await api('/api/me',{method:'PATCH',body:JSON.stringify({displayName:name,bio})})).user;profile=null;render();toast('Profile saved')}catch(e){toast(e.message)}}
 async function openThread(){if(!profile)return;partner=profile;replyTarget=null;screen='thread';render()}
@@ -625,9 +788,10 @@ async function sendMessage(e){
   const sentImg = dmImage;
   input.value='';dmImage=null;
   try{
-    await api('/api/messages/'+partner.username,{method:'POST',body:JSON.stringify({text,image:sentImg,replyTo:replyId})});
+    if(!partner || !partner.username) throw Error('Select a valid conversation');
+    await api('/api/messages/'+encodeURIComponent(partner.username),{method:'POST',body:JSON.stringify({text,image:sentImg,replyTo:replyId})});
     replyTarget=null;render();
-  }catch(x){toast(x.message);input.value=text}finally{sending=false;btn.disabled=false;input.focus()}
+  }catch(x){toast(x.message||'Unable to send message');input.value=text}finally{sending=false;btn.disabled=false;input.focus()}
 }
 
 function authView(){let signup=authTab==='signup';return `<section class="auth"><div class="authbox"><div class="hero"><h1>Nova</h1><div class="muted">${signup?'Create your account':'Sign in to Nova'}</div></div><div class="tabs"><button class="tab ${authTab==='login'?'on':''}" data-auth="login">Login</button><button class="tab ${signup?'on':''}" data-auth="signup">Sign up</button></div><form id="authform">${signup?`<label>Username</label><input id="username" autocomplete="username" required placeholder="your_username" value="${esc(signupDraft.username||'')}"><label>Display name</label><input id="displayName" required placeholder="Your name" value="${esc(signupDraft.displayName||'')}">`:''}<label>Gmail</label><input id="email" type="email" autocomplete="email" required placeholder="you@gmail.com" value="${esc(signupDraft.email||'')}"><label>Password</label><input id="password" type="password" inputmode="numeric" pattern="\\d{5}" maxlength="5" autocomplete="${signup?'new-password':'current-password'}" required placeholder="5-digit password">${signup?'<label>Confirm password</label><input id="confirmPassword" type="password" inputmode="numeric" pattern="\\d{5}" maxlength="5" autocomplete="new-password" required placeholder="Re-enter password">':''}<button class="primary">${signup?'Create account':'Login'}</button><div class="error" id="autherror"></div></form><div class="devcredit">Developer Name : Aman Kr</div></div></section>`}
@@ -978,15 +1142,74 @@ function bind(){
   let videoCallBtn=document.querySelector('#video-call-btn');if(videoCallBtn)videoCallBtn.onclick=()=>startCall(partner.username, true);
   let cancelReply=document.querySelector('#cancel-reply');if(cancelReply)cancelReply.onclick=()=>{replyTarget=null;render()};
 
+function openQuickEmojiPicker(){
+  const existing = document.querySelector('#emojipickerpopover');
+  if(existing) { existing.remove(); return; }
+  const emojis = ['😀','😂','😍','❤️','👍','🔥','🙌','😎','✨','🥺','😭','🎉','👏','💯','🙏','😊','😴','🤔','💡','🚀'];
+  const html = `<div id="emojipickerpopover" style="position:fixed;bottom:70px;left:15px;background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:10px;display:grid;grid-template-columns:repeat(5,1fr);gap:8px;z-index:200;box-shadow:0 4px 20px rgba(0,0,0,0.5)">
+    ${emojis.map(em => `<button style="font-size:22px;background:none;border:0;cursor:pointer;padding:4px;border-radius:8px" data-insert-emoji="${em}">${em}</button>`).join('')}
+  </div>`;
+  document.body.insertAdjacentHTML('beforeend', html);
+  const pop = document.querySelector('#emojipickerpopover');
+  pop.querySelectorAll('[data-insert-emoji]').forEach(b => {
+    b.onclick = () => {
+      const msgInp = document.querySelector('#message');
+      if(msgInp){
+        msgInp.value += b.dataset.insertEmoji;
+        msgInp.dispatchEvent(new Event('input'));
+        msgInp.focus();
+      }
+      pop.remove();
+    };
+  });
+  setTimeout(() => {
+    window.addEventListener('click', function closePop(e){
+      if(!pop.contains(e.target)){
+        pop.remove();
+        window.removeEventListener('click', closePop);
+      }
+    });
+  }, 100);
+}
+
   let msgInput=document.querySelector('#message');
+  let sendIconTxt=document.querySelector('#send-icon-txt');
+  let sendBtn=document.querySelector('#sendbtn');
+  let typingT;
   if(msgInput){
-    let typingT;
     msgInput.oninput=()=>{
+      const val = msgInput.value.trim();
+      if(sendIconTxt){
+        sendIconTxt.innerText = val.length ? '➤' : '🎙️';
+      }
       if(typingT)return;
       typingT=setTimeout(()=>{typingT=null},1200);
       if(partner)wsSendMsg({type:'typing',to:partner.username});
     };
   }
+  if(sendBtn){
+    sendBtn.onclick = (e) => {
+      let val = msgInput ? msgInput.value.trim() : '';
+      if(!val && !dmImage){
+        e.preventDefault();
+        startAudioRecording();
+      }
+    };
+  }
+  let emojiBtn = document.querySelector('#emoji-picker-btn');
+  if(emojiBtn){
+    emojiBtn.onclick = (e) => {
+      e.stopPropagation();
+      openQuickEmojiPicker();
+    };
+  }
+
+  document.querySelectorAll('[data-open-userlist]').forEach(el => {
+    el.onclick = () => {
+      const u = profile || me;
+      openUserListModal(el.dataset.openUserlist, u.username);
+    };
+  });
   
   let createBtn=document.querySelector('#create-btn');if(createBtn)createBtn.onclick=openCreateSheet;
   document.querySelectorAll('[data-view-highlight]').forEach(b=>b.onclick=()=>viewHighlight(b.dataset.viewHighlight));

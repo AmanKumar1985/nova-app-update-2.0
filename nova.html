@@ -2997,6 +2997,8 @@ function bind(){
     if(screen==='reels')loadReelsScreenData();
     if(screen==='add'){addMode='post';uploadImage=null;uploadIsVideo=false}
     render();
+  });
+
   let homeViewAll = document.querySelector('#home-view-all-shorts');
   if (homeViewAll) {
     homeViewAll.onclick = () => {

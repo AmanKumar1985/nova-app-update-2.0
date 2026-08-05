@@ -553,13 +553,12 @@ app.get('/api/youtube/shorts', auth, async (req, res) => {
   const apiKey = process.env.YOUTUBE_API_KEY || '';
 
   const fallbackShorts = [
-    { id: '3Z78y1k3W5Y', title: '✨ High Speed Drive 🏎️ #shorts #viral', description: 'Top speed drive on highway.', thumbnail: 'https://img.youtube.com/vi/3Z78y1k3W5Y/hqdefault.jpg', channelTitle: '🔴 YouTube Shorts', viewCount: '1.8M', likeCount: '145K' },
-    { id: '5qap5aO4i9A', title: '🌊 Escape to Nature 🍃 #shorts #trending', description: 'Relaxing ocean waves and breeze.', thumbnail: 'https://img.youtube.com/vi/5qap5aO4i9A/hqdefault.jpg', channelTitle: '🔴 YouTube Shorts', viewCount: '920K', likeCount: '82K' },
-    { id: 'LXb3EKWsInQ', title: '⚡ Cyberpunk Vibe 🌆 #shorts #cyber', description: 'Futuristic city lights.', thumbnail: 'https://img.youtube.com/vi/LXb3EKWsInQ/hqdefault.jpg', channelTitle: '⚡ Neon Cyber', viewCount: '3.4M', likeCount: '310K' },
     { id: 'kJQP7kiw5Fk', title: '🎵 Lofi Beats Relaxation 🎧 #shorts', description: 'Smooth lofi music vibes.', thumbnail: 'https://img.youtube.com/vi/kJQP7kiw5Fk/hqdefault.jpg', channelTitle: '🎧 Lofi Girl', viewCount: '5.1M', likeCount: '490K' },
-    { id: 'd9MyW72ELq0', title: '🚀 Quantum Physics Explained #shorts', description: 'Mind bending science facts.', thumbnail: 'https://img.youtube.com/vi/d9MyW72ELq0/hqdefault.jpg', channelTitle: '🧠 SciShow', viewCount: '2.3M', likeCount: '210K' },
     { id: 'fJ9rUzIMcZQ', title: '💃 Viral Street Dance Battle #shorts', description: 'Crazy dance moves live.', thumbnail: 'https://img.youtube.com/vi/fJ9rUzIMcZQ/hqdefault.jpg', channelTitle: '💃 Dance Nation', viewCount: '8.9M', likeCount: '820K' },
-    { id: '9bZkp7q19f0', title: '🔥 Ultimate Gaming Clutch Moment #shorts', description: '1 v 4 insane victory.', thumbnail: 'https://img.youtube.com/vi/9bZkp7q19f0/hqdefault.jpg', channelTitle: '🎮 Pro Gamer', viewCount: '4.7M', likeCount: '390K' }
+    { id: 'LXb3EKWsInQ', title: '⚡ Cyberpunk Vibe 🌆 #shorts #cyber', description: 'Futuristic city lights.', thumbnail: 'https://img.youtube.com/vi/LXb3EKWsInQ/hqdefault.jpg', channelTitle: '⚡ Neon Cyber', viewCount: '3.4M', likeCount: '310K' },
+    { id: '9bZkp7q19f0', title: '🔥 Ultimate Gaming Clutch Moment #shorts', description: '1 v 4 insane victory.', thumbnail: 'https://img.youtube.com/vi/9bZkp7q19f0/hqdefault.jpg', channelTitle: '🎮 Pro Gamer', viewCount: '4.7M', likeCount: '390K' },
+    { id: 'dQw4w9WgXcQ', title: '✨ Trending Music Vibes 🎶 #shorts #viral', description: 'Top viral beats.', thumbnail: 'https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg', channelTitle: '🔴 YouTube Shorts', viewCount: '1.4B', likeCount: '15M' },
+    { id: 'L_LUpnjgPso', title: '🚀 Mind Bending Short Clips #shorts', description: 'Insane viral moments.', thumbnail: 'https://img.youtube.com/vi/L_LUpnjgPso/hqdefault.jpg', channelTitle: '🧠 SciShow', viewCount: '2.8M', likeCount: '230K' }
   ];
 
   if (!apiKey) {
@@ -974,6 +973,10 @@ function seedReelsIfEmpty() {
     db.prepare("DELETE FROM posts WHERE is_instagram=1 OR platform='instagram' OR author_id IN (SELECT id FROM users WHERE username IN ('viral_reels', 'cyberpunk_vibe'))").run();
     db.prepare("DELETE FROM users WHERE username IN ('viral_reels', 'cyberpunk_vibe')").run();
 
+    // Fix any old broken video URLs in database
+    db.prepare("UPDATE posts SET external_url='https://www.youtube.com/shorts/kJQP7kiw5Fk' WHERE external_url LIKE '%3Z78y1k3W5Y%'").run();
+    db.prepare("UPDATE posts SET external_url='https://www.youtube.com/shorts/fJ9rUzIMcZQ' WHERE external_url LIKE '%5qap5aO4i9A%'").run();
+
     const existingReels = db.prepare("SELECT COUNT(*) count FROM posts WHERE is_reel=1").get().count;
     if (existingReels > 0) return;
     
@@ -995,8 +998,8 @@ function seedReelsIfEmpty() {
     });
 
     const sampleReels = [
-      { authorId: userIds[0], image: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4', caption: '🌊 Escape to Nature 🍃 #shorts #youtube #trending', platform: 'youtube', externalUrl: 'https://www.youtube.com/shorts/3Z78y1k3W5Y', isIg: 0 },
-      { authorId: userIds[1], image: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4', caption: '🚗 Scenic Highway Joyride 🏁 #shorts #youtube #speed', platform: 'youtube', externalUrl: 'https://www.youtube.com/shorts/5qap5aO4i9A', isIg: 0 }
+      { authorId: userIds[0], image: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4', caption: '🌊 Escape to Nature 🍃 #shorts #youtube #trending', platform: 'youtube', externalUrl: 'https://www.youtube.com/shorts/kJQP7kiw5Fk', isIg: 0 },
+      { authorId: userIds[1], image: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4', caption: '🏎️ Scenic Highway Joyride 🏁 #shorts #youtube #speed', platform: 'youtube', externalUrl: 'https://www.youtube.com/shorts/fJ9rUzIMcZQ', isIg: 0 }
     ];
 
     sampleReels.forEach((r, i) => {

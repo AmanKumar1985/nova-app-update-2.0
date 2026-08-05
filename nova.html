@@ -977,7 +977,8 @@ async function boot(){
     if (token) {
       try {
         me = (await api('/api/me')).user;
-        await loadPosts();
+        await loadPosts(true);
+        await loadYouTubeShorts('', true);
         await loadNotes();
         await loadUnreadCounts();
         connectWS();
@@ -990,7 +991,70 @@ async function boot(){
   render();
   dismissSplash();
 }
-async function loadPosts(){posts=(await api('/api/posts')).posts}
+
+let homePostsFetchingMore = false;
+async function loadPosts(fresh = false){
+  try {
+    const res = await api('/api/posts' + (fresh ? '?fresh=1' : ''));
+    let fetched = res.posts || [];
+    if (fresh && fetched.length) {
+      fetched = shuffleFrontendArray(fetched);
+    }
+    posts = fetched;
+  } catch(e) {}
+}
+
+async function loadMoreHomeFeedSuggestions() {
+  if (homePostsFetchingMore || screen !== 'home') return;
+  homePostsFetchingMore = true;
+  const loader = document.querySelector('#home-scroll-loader');
+  if (loader) loader.style.display = 'block';
+  try {
+    const res = await api('/api/youtube/shorts?fresh=1');
+    if (res.shorts && res.shorts.length) {
+      const suggestedShortsAsPosts = res.shorts.slice(0, 4).map(s => ({
+        id: 'suggested_' + s.id + '_' + Math.random().toString(36).slice(2, 7),
+        image: s.thumbnail,
+        isReel: true,
+        platform: 'youtube',
+        externalUrl: 'https://www.youtube.com/shorts/' + s.id,
+        caption: s.title + ' #shorts #youtube #suggested',
+        createdAt: Date.now(),
+        author: { username: (s.channelTitle || 'yt_creator').toLowerCase().replace(/[^a-z0-9]/g, '') || 'yt_creator', displayName: s.channelTitle || 'YouTube Creator', avatar: s.thumbnail },
+        likes: Math.floor(Math.random() * 50000) + 1200,
+        liked: false,
+        saved: false,
+        comments: []
+      }));
+
+      const newItems = suggestedShortsAsPosts.filter(p => !posts.some(existing => existing.externalUrl === p.externalUrl));
+      if (newItems.length) {
+        posts = [...posts, ...newItems];
+        const feedContainer = document.querySelector('#home-posts-list');
+        if (feedContainer) {
+          feedContainer.insertAdjacentHTML('beforeend', newItems.map(post).join(''));
+          bind();
+        }
+      }
+    }
+  } catch(e) {}
+  homePostsFetchingMore = false;
+}
+
+window.addEventListener('scroll', () => {
+  if (screen !== 'home') return;
+  if ((window.innerHeight + window.scrollY) >= (document.body.offsetHeight - 700)) {
+    loadMoreHomeFeedSuggestions();
+  }
+});
+
+window.addEventListener('focus', () => {
+  if (token && screen === 'home') {
+    loadPosts(true);
+    loadYouTubeShorts('', true);
+  }
+});
+
 async function loadUnreadCounts(){if(!token)return;try{unreadCounts=await api('/api/unread-counts')}catch(e){}}
 
 const NAV_ICONS={
@@ -1081,7 +1145,12 @@ function feed(){
   return `${renderTop()}
   <div class="stories" id="stories-row"><button class="story" data-story-mine="1"><div class="ring">${avatar(me)}</div>Your story +</button></div>
   ${renderHomeShortsGrid()}
-  ${posts.length?posts.map(post).join(''):'<div class="empty">Your feed is empty.<br><br>Follow people from Explore or share your first post.</div>'}
+  <div id="home-posts-list">
+    ${posts.length?posts.map(post).join(''):'<div class="empty">Your feed is empty.<br><br>Follow people from Explore or share your first post.</div>'}
+  </div>
+  <div id="home-scroll-loader" style="text-align:center;padding:24px 15px;color:var(--muted);font-size:13px;font-weight:600">
+    🔴 Suggesting more fresh videos...
+  </div>
   ${nav()}`;
 }
 
@@ -2796,10 +2865,11 @@ function post(p){
   if (p.isReel) {
     const isYt = (p.platform === 'youtube') || (p.externalUrl && p.externalUrl.includes('youtube.com')) || (p.image && !p.image.endsWith('.mp4') && !p.image.endsWith('.webm') && !p.image.startsWith('/uploads/') && !p.image.startsWith('data:video/'));
     if (isYt) {
-      let ytId = '3Z78y1k3W5Y';
+      let ytId = 'kJQP7kiw5Fk';
       if (p.externalUrl) {
         const match = p.externalUrl.match(/(?:shorts\/|v=|embed\/|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
         if (match) ytId = match[1];
+        if (ytId === '3Z78y1k3W5Y' || ytId === '5qap5aO4i9A') ytId = 'kJQP7kiw5Fk';
       } else if (p.image && p.image.length === 11) {
         ytId = p.image;
       }
